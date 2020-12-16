@@ -5,7 +5,6 @@
  * @version 0.3
  * @date 2020-12-14
  */
-
     /* header guard */
 #ifndef CSAFE_ASSERT_H
 #define CSAFE_ASSERT_H

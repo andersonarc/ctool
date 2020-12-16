@@ -5,7 +5,6 @@
  * @version 0.2
  * @date 2020-09-30
  */
-
     /* header guard */
 #ifndef CSAFE_SAFECALL_H
 #define CSAFE_SAFECALL_H

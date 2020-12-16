@@ -5,7 +5,6 @@
  * @version 0.2
  * @date 2020-09-30
  */
-
     /* header guard */
 #ifndef CSAFE_NOTNULL_H
 #define CSAFE_NOTNULL_H
