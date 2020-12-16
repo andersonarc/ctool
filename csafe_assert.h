@@ -20,7 +20,7 @@
 /**
  * @brief generic assertion macro
  */
-#define _generic_assert_format(condition, message, ...) \
+#define _generic_assert(condition, message, ...) \
     if (condition) {                             \
         fprintf(stderr, "csafe: assert failed: " message "\n", __VA_ARGS__); \
         fprintf(stdout, "csafe: assert failed: " message "\n", __VA_ARGS__); \
@@ -28,39 +28,34 @@
     }
 
 /**
- * @brief generic assertion macro
+ * @brief errno format string
  */
-#define _generic_assert(condition, message) \
-    if (condition) {                             \
-        fprintf(stderr, "csafe: assert failed: " message "\n"); \
-        fprintf(stdout, "csafe: assert failed: " message "\n"); \
-        exit(EXIT_FAILURE);                                             \
-    }
+#define _ERRNO_POSTFIX "errno is %d (%s)", errno, strerror(errno)
         
 /**
  * @brief asserts that variable is not null
  */
-#define assert_not_null(variable) _generic_assert(variable == NULL, "variable '" #variable "'" " is null, expected not null");
+#define assert_not_null(variable) _generic_assert(variable == NULL, "variable '" #variable "'" " is null, expected not null; " _ERRNO_POSTFIX);
 
 /**
  * @brief asserts that function result is not null
  */
-#define assert_not_null_function(function_call) _generic_assert(function_call == NULL, "function " #function_call " returned null, expected not null");
+#define assert_not_null_function(function_call) _generic_assert(function_call == NULL, "function " #function_call " returned null, expected not null; " _ERRNO_POSTFIX);
 
 /**
  * @brief asserts that function result is not null and sets variable to the result
  */
-#define assert_not_null_function_set(expression, ...) _generic_assert((expression) == NULL, "expression (" #expression ") returned null, expected not null");
+#define assert_not_null_function_set(expression, ...) _generic_assert((expression) == NULL, "expression (" #expression ") returned null, expected not null; " _ERRNO_POSTFIX);
 
 /**
  * @brief asserts that generic condition is true
  */
-#define assert_true(condition) _generic_assert(!condition, "condition (" #condition ")" " is false, expected true");
+#define assert_true(condition) _generic_assert(!condition, "condition (" #condition ")" " is false, expected true; " _ERRNO_POSTFIX);
 
 /**
  * @brief asserts that generic condition is false
  */
-#define assert_false(condition) _generic_assert(condition, "condition (" #condition ")" " is true, expected false");
+#define assert_false(condition) _generic_assert(condition, "condition (" #condition ")" " is true, expected false; " _ERRNO_POSTFIX);
 
 /**
  * @brief asserts that errno is zero
