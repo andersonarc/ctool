@@ -1,5 +1,5 @@
 /**
- * @file csafe_notnull.h
+ * @file notnull.h
  * @author andersonarc@github
  * @brief not null variables and assertions
  * @version 0.2
