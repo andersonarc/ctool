@@ -2,7 +2,7 @@
 
 # project declaration
 project('csafe', 'c',
-    version: '0.3',
+    version: '0.4',
     license: 'GPL3')
 
 # prepare build files
