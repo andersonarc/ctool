@@ -31,7 +31,7 @@ void _csafe_assert_impl(bool condition, char* message, ...);
     #define csafe_assert(condition, message, ...) _csafe_assert_impl(condition, message, __VA_ARGS__)
 #else
     #define csafe_assert(condition, message, ...)
-#endif /* DEBUG /*
+#endif /* DEBUG */
 
 /**
  * @brief header-local message formatter
