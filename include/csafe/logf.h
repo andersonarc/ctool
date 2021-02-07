@@ -13,7 +13,7 @@
 /**
  * @brief formatted message with custom suffix and prefix
  */
-#define log_sp_f(message, function, suffix, prefix, ...) _csafe_logf_message(prefix "[" suffix "] " function ": " message, __VA_ARGS__)
+#define log_sp_f(message, function, suffix, prefix, ...) _csafe_logf_message(prefix "[" suffix "] " function ": " message "\n", __VA_ARGS__)
 /**
  * @brief formatted message with custom suffix
  */
@@ -23,7 +23,7 @@
 /**
  * @brief formatted error with custom suffix and prefix
  */
-#define loge_sp_f(message, function, suffix, prefix, ...) _csafe_logf_error(prefix "[" suffix "] " function ": " message, __VA_ARGS__)
+#define loge_sp_f(message, function, suffix, prefix, ...) _csafe_logf_error(prefix "[" suffix "] " function ": " message "\n", __VA_ARGS__)
 /**
  * @brief formatted error message with custom suffix
  */
@@ -61,7 +61,7 @@
 /**
  * @brief formatted fatal error
  */
-#define logfe_f(message, function, ...) _csafe_logf_fatal("!!!!! [FATAL] " function ": " message, __VA_ARGS__)
+#define logfe_f(message, function, ...) _csafe_logf_fatal("!!!!! [FATAL] " function ": " message "\n", __VA_ARGS__)
 
 
 
