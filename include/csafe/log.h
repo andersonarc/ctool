@@ -52,7 +52,11 @@
  * @param message message format string
  * @param function caller function name
  */
-#define logd(message, function, ...) log_s(message, function, "D", __VA_ARGS__)
+#ifdef DEBUG
+    #define logd(message, function, ...) log_s(message, function, "D", __VA_ARGS__)
+#else
+    #define logd(message, function, ...)
+#endif /* DEBUG */
 
 /**
  * @brief log info
