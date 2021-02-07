@@ -2,7 +2,7 @@
  * @file logf.h
  * @author andersonarc (e.andersonarc@gmail.com)
  * @brief csafe formatted logging
- * @version 0.2
+ * @version 0.3
  * @date 2021-02-07
  */
     /* header guard */
@@ -17,7 +17,7 @@
 /**
  * @brief formatted message with custom suffix
  */
-#define log_s_f(message, function, suffix, ...) log_sp(message, function, suffix, prefix, __VA_ARGS__)
+#define log_s_f(message, function, suffix, ...) log_sp_f(message, function, suffix, prefix, __VA_ARGS__)
 
 
 /**
@@ -27,14 +27,14 @@
 /**
  * @brief formatted error message with custom suffix
  */
-#define loge_s_f(message, function, suffix, ...) loge_sp(message, function, suffix, prefix, __VA_ARGS__)
+#define loge_s_f(message, function, suffix, ...) loge_sp_f(message, function, suffix, prefix, __VA_ARGS__)
 
 
 /**
  * @brief formatted debug message
  */
 #ifdef DEBUG
-    #define logd(message, function, ...) log_s(message, function, "D", __VA_ARGS__)
+    #define logd(message, function, ...) log_s_f(message, function, "D", __VA_ARGS__)
 #else
     #define logd(message, function, ...)
 #endif /* DEBUG */
@@ -43,19 +43,19 @@
 /**
  * @brief formatted info
  */
-#define logi_f(message, function, ...) log_s(message, function, "I", __VA_ARGS__)
+#define logi_f(message, function, ...) log_s_f(message, function, "I", __VA_ARGS__)
 
 
 /**
  * @brief formatted warning
  */
-#define logw_f(message, function, ...) loge_sp(message, function, "W", "!", __VA_ARGS__)
+#define logw_f(message, function, ...) loge_sp_f(message, function, "W", "!", __VA_ARGS__)
 
 
 /**
  * @brief formatted error
  */
-#define loge_f(message, function, ...) loge_sp(message, function, "E", "!!!", __VA_ARGS__)
+#define loge_f(message, function, ...) loge_sp_f(message, function, "E", "!!!", __VA_ARGS__)
 
 
 /**
