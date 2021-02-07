@@ -6,8 +6,8 @@
  * @date 2021-02-07
  */
     /* header guard */
-#ifndef CSAFE_LOGF_H
-#define CSAFE_LOGF_H
+#ifndef CSAFE_LOG_H
+#define CSAFE_LOG_H
 
     /* defines */
 /**
