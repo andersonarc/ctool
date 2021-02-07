@@ -28,7 +28,7 @@
 void _csafe_logf_message(char* message, ...) {
     va_list format;
     va_start(format, message);
-    vfprintf(stderr, message, format);
+    vfprintf(stdout, message, format);
     va_end(format);
 }
 
@@ -41,7 +41,6 @@ void _csafe_logf_error(char* message, ...) {
     va_list format;
     va_start(format, message);
     vfprintf(stderr, message, format);
-    vfprintf(stdout, message, format);
     va_end(format);
 }
 
@@ -54,7 +53,6 @@ void _csafe_logf_fatal(char* message, ...) {
     va_list format;
     va_start(format, message);
     vfprintf(stderr, message, format);
-    vfprintf(stdout, message, format);
     va_end(format);
     exit(1);
 }
@@ -66,7 +64,6 @@ void _csafe_logf_fatal(char* message, ...) {
  */
 void _csafe_log_error(char* message) {
     fputs(message, stderr);
-    fputs(message, stdout);
 }
 
 /**
@@ -76,6 +73,5 @@ void _csafe_log_error(char* message) {
  */
 void _csafe_log_fatal(char* message) {
     fputs(message, stderr);
-    fputs(message, stdout);
     exit(1);
 }
