@@ -34,9 +34,9 @@
  * @brief formatted debug message
  */
 #ifdef DEBUG
-    #define logd(message, function, ...) log_s_f(message, function, "D", __VA_ARGS__)
+    #define logd_f(message, function, ...) log_s_f(message, function, "D", __VA_ARGS__)
 #else
-    #define logd(message, function, ...)
+    #define logd_f(message, function, ...)
 #endif /* DEBUG */
 
 
