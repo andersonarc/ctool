@@ -14,6 +14,6 @@ libcsafe = library('csafe', [src],
     include_directories: include)
 
 # create dependency
-csafe_dep = declare_dependency(
+libcsafe_dep = declare_dependency(
     include_directories: include,
     link_with: libcsafe)
