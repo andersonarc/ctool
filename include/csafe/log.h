@@ -17,7 +17,7 @@
 /**
  * @brief message with custom suffix
  */
-#define log_s(message, function, suffix) log_sp(message, function, suffix, prefix)
+#define log_s(message, function, suffix) log_sp(message, function, suffix, "")
 
 
 /**
@@ -27,7 +27,7 @@
 /**
  * @brief error message with custom suffix
  */
-#define loge_s(message, function, suffix) loge_sp(message, function, suffix, prefix)
+#define loge_s(message, function, suffix) loge_sp(message, function, suffix, "")
 
 
 /**

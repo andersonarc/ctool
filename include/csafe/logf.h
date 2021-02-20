@@ -17,7 +17,7 @@
 /**
  * @brief formatted message with custom suffix
  */
-#define log_s_f(message, function, suffix, ...) log_sp_f(message, function, suffix, prefix, __VA_ARGS__)
+#define log_s_f(message, function, suffix, ...) log_sp_f(message, function, suffix, "", __VA_ARGS__)
 
 
 /**
@@ -27,7 +27,7 @@
 /**
  * @brief formatted error message with custom suffix
  */
-#define loge_s_f(message, function, suffix, ...) loge_sp_f(message, function, suffix, prefix, __VA_ARGS__)
+#define loge_s_f(message, function, suffix, ...) loge_sp_f(message, function, suffix, "", __VA_ARGS__)
 
 
 /**
