@@ -23,47 +23,47 @@
 /**
  * @brief asserts that variable is not null
  */
-#define assertr_not_null(variable, status)                 _csafe_assertr(variable == NULL, ("variable '" #variable "'" " is null, expected not null"), status)
+#define assertr_not_null(variable, status)                 _csafe_assertr(variable == NULL, "variable '" #variable "'" " is null, expected not null", status)
 
 /**
  * @brief assert that function result is not null
  */
-#define assertr_not_null_function(function_call, status)   _csafe_assertr((function_call) == NULL, ("function call '" #function_call "' returned null, expected not null"), status)
+#define assertr_not_null_function(function_call, status)   _csafe_assertr((function_call) == NULL, "function call '" #function_call "' returned null, expected not null", status)
 
 /**
  * @brief asserts that function result is not null and sets variable to the result
  */
-#define assertr_not_null_function_set(variable, function_call, status)  _csafe_assertr((variable = function_call) == NULL, ("function call '" #function_call "' returned null, expected not null"), status)
+#define assertr_not_null_function_set(variable, function_call, status)  _csafe_assertr((variable = function_call) == NULL, "function call '" #function_call "' returned null, expected not null", status)
 
 /**
  * @brief asserts that @param a is equal to @param b
  */
-#define assertr_equals(a, b, status)                       _csafe_assertr(!(a == b), ("'" #a "' is not equal to '" #b "'"), status)
+#define assertr_equals(a, b, status)                       _csafe_assertr(!(a == b), "'" #a "' is not equal to '" #b "'", status)
 
 /**
  * @brief asserts that generic condition is true
  */
-#define assertr_true(condition, status)                    _csafe_assertr(!condition, ("condition (" #condition ")" " is false, expected true"), status)
+#define assertr_true(condition, status)                    _csafe_assertr(!condition, "condition (" #condition ")" " is false, expected true", status)
 
 /**
  * @brief asserts that generic condition is false
  */
-#define assertr_false(condition, status)                   _csafe_assertr(condition, ("condition (" #condition ")" " is true, expected false"), status)
+#define assertr_false(condition, status)                   _csafe_assertr(condition, "condition (" #condition ")" " is true, expected false", status)
 
 /**
  * @brief asserts that @param a is equal to @param b with custom message
  */
-#define assertr_equals(a, b, message, status)              _csafe_assertr(!(a == b), ("'" #a "' is not equal to '" #b "': " message), status)
+#define assertr_equals(a, b, message, status)              _csafe_assertr(!(a == b), "'" #a "' is not equal to '" #b "': " message, status)
 
 /**
  * @brief assert that @param condition is true with custom message
  */
-#define assertr_true_custom(condition, message, status)    _csafe_assertr(!condition, ("condition (" #condition ")" " is false, expected true: " message), status)
+#define assertr_true_custom(condition, message, status)    _csafe_assertr(!condition, "condition (" #condition ")" " is false, expected true: " message, status)
 
 /**
  * @brief assert that @param condition is false with custom message
  */
-#define assertr_false_custom(condition, message, status)    _csafe_assertr(condition, ("condition (" #condition ")" " is true, expected false: " message), status)
+#define assertr_false_custom(condition, message, status)    _csafe_assertr(condition, "condition (" #condition ")" " is true, expected false: " message, status)
 
 /**
  * @brief asserts that errno is zero
