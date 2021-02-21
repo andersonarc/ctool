@@ -9,18 +9,21 @@
 #ifndef CSAFE_LOG_H
 #define CSAFE_LOG_H
 
+    /* includes */
+#include <stdio.h> /* puts */
+
     /* defines */
 /**
  * @brief print a message, for internal use only
  * 
  * @param message string
  */
-#define _csafe_log_message(message) puts(message)
+#define _csafe_log_message(message) fputs(message, stdout)
 
 /**
  * @brief message with custom suffix and prefix
  */
-#define log_sp(function, message, suffix, prefix) _csafe_log_message(prefix "[" suffix "] " function ": " message)
+#define log_sp(function, message, suffix, prefix) _csafe_log_message(prefix "[" suffix "] " function ": " message "\n")
 /**
  * @brief message with custom suffix
  */
@@ -29,7 +32,7 @@
 /**
  * @brief error with custom suffix and prefix
  */
-#define loge_sp(function, message, suffix, prefix) _csafe_log_error(prefix "[" suffix "] " function ": " message)
+#define loge_sp(function, message, suffix, prefix) _csafe_log_error(prefix "[" suffix "] " function ": " message "\n")
 /**
  * @brief error message with custom suffix
  */
@@ -38,31 +41,31 @@
 /**
  * @brief debug message
  */
-#ifdef DEBUG
-    #define logd(function, message) log_s(function, message, "D")
-#else
+#ifdef NDEBUG
     #define logd(function, message)
-#endif /* DEBUG */
+#else
+    #define logd(function, message) log_s(function, message, "DEBUG")
+#endif /* NDEBUG */
 
 /**
  * @brief info
  */
-#define logi(function, message) log_s(function, message, "I")
+#define logi(function, message) log_s(function, message, "INFO")
 
 /**
  * @brief warning
  */
-#define logw(function, message) loge_sp(function, message, "W", "!")
+#define logw(function, message) loge_sp(function, message, "WARN", "! ")
 
 /**
  * @brief error
  */
-#define loge(function, message) loge_sp(function, message, "E", "!!!")
+#define loge(function, message) loge_sp(function, message, "ERROR", "!!! ")
 
 /**
  * @brief fatal error
  */
-#define logfe(function, message) _csafe_log_fatal("!!!!! [FATAL] " function ": " message)
+#define logfe(function, message) _csafe_log_fatal("!!!!! [FATAL] " function ": " message "\n")
 
     /* functions */
 /**

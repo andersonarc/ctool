@@ -18,60 +18,60 @@
 /**
  * @brief csafe debug assertion
  */
-#ifdef DEBUG
-    #define _csafe_assertd(condition, message) if (condition) { logfe("_csafe_assertd", message); }
+#ifdef NDEBUG
+    #define _csafe_assertd(function, condition, message)
 #else
-    #define _csafe_assertd(condition, message)
-#endif /* DEBUG */
+    #define _csafe_assertd(function, condition, message) if (condition) { logfe(function, message); }
+#endif /* NDEBUG */
 
 /**
  * @brief assert that variable is not null
  */
-#define assertd_not_null(variable)                _csafe_assertd(variable == NULL, "variable '" #variable "'" " is null, expected not null")
+#define assertd_not_null(function, variable)                _csafe_assertd(function, (variable == NULL), "'" #variable "'" " is null, expected not null")
 
 /**
  * @brief assert that function result is not null
  */
-#define assertd_not_null_function(function_call)  _csafe_assertd((function_call) == NULL, "function call '" #function_call "' returned null, expected not null")
+#define assertd_not_null_function(function, function_call)  _csafe_assertd(function, (function_call == NULL), "'" #function_call "' returned null, expected not null")
 
 /**
- * @brief assert that function result is not null and set variable to the result
+ * @brief asserts that function result is not null and sets variable to the result
  */
-#define assertd_not_null_function_set(expression) _csafe_assertd((expression) == NULL, "expression (" #expression ") returned null, expected not null")
+#define assertd_not_null_function_set(function, variable, function_call)  _csafe_assertd(function, (variable = function_call) == NULL, "function call '" #function_call "' returned null, expected not null")
 
 /**
- * @brief assert that @param a is equal to @param b
+ * @brief assert that a is equal to b
  */
-#define assertd_equals(a, b)                      _csafe_assertd(!(a == b), "'" #a "' is not equal to '" #b "'")
+#define assertd_equals(function, a, b)                      _csafe_assertd(function, !(a == b), "'" #a "' is not equal to '" #b "'")
 
 /**
- * @brief assert that @param condition is true
+ * @brief assert that condition is true
  */
-#define assertd_true(condition)                   _csafe_assertd(!condition, "condition (" #condition ")" " is false, expected true")
+#define assertd_true(function, condition)                   _csafe_assertd(function, !(condition), "(" #condition ")" " is false, expected true")
 
 /**
- * @brief assert that @param condition is false
+ * @brief assert that condition is false
  */
-#define assertd_false(condition)                  _csafe_assertd(condition, "condition (" #condition ")" " is true, expected false")
+#define assertd_false(function, condition)                  _csafe_assertd(function, (condition), "(" #condition ")" " is true, expected false")
 
 /**
- * @brief assert that @param a is equal to @param b with custom message
+ * @brief assert that a is equal to b with custom message
  */
-#define assertd_equals(a, b, message)             _csafe_assertd(!(a == b), "'" #a "' is not equal to '" #b "': " message)
+#define assertd_equals_custom(function, a, b, message)      _csafe_assertd(function, !(a == b), "'" #a "' is not equal to '" #b "': " message)
 
 /**
- * @brief assert that @param condition is true with custom message
+ * @brief assert that condition is true with custom message
  */
-#define assertd_true_custom(condition, message)   _csafe_assertd(!condition, "condition (" #condition ")" " is false, expected true: " message)
+#define assertd_true_custom(function, condition, message)   _csafe_assertd(function, !(condition), "(" #condition ")" " is false, expected true: " message)
 
 /**
- * @brief assert that @param condition is false with custom message
+ * @brief assert that condition is false with custom message
  */
-#define assertd_false_custom(condition, message)  _csafe_assertd(condition, "condition (" #condition ")" " is true, expected false: " message)
+#define assertd_false_custom(function, condition, message)  _csafe_assertd(function, (condition), "(" #condition ")" " is true, expected false: " message)
 
 /**
  * @brief assert that errno is equal to zero
  */
-#define assertd_errno()                           assertd_equals(errno, 0)
+#define assertd_errno(function)                             assertd_equals(function, errno, 0)
 
 #endif /* CSAFE_ASSERTD_H */

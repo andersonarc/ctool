@@ -34,7 +34,7 @@
  * @brief formatted debug message
  */
 #ifdef DEBUG
-    #define logd_f(function, message, ...) log_s_f(function, message, "D", __VA_ARGS__)
+    #define logd_f(function, message, ...) log_s_f(function, message, "DEBUG", __VA_ARGS__)
 #else
     #define logd_f(function, message, ...)
 #endif /* DEBUG */
@@ -43,19 +43,19 @@
 /**
  * @brief formatted info
  */
-#define logi_f(function, message, ...) log_s_f(function, message, "I", __VA_ARGS__)
+#define logi_f(function, message, ...) log_s_f(function, message, "INFO", __VA_ARGS__)
 
 
 /**
  * @brief formatted warning
  */
-#define logw_f(function, message, ...) loge_sp_f(function, message, "W", "!", __VA_ARGS__)
+#define logw_f(function, message, ...) loge_sp_f(function, message, "WARN", "! ", __VA_ARGS__)
 
 
 /**
  * @brief formatted error
  */
-#define loge_f(function, message, ...) loge_sp_f(function, message, "E", "!!!", __VA_ARGS__)
+#define loge_f(function, message, ...) loge_sp_f(function, message, "ERROR", "!!! ", __VA_ARGS__)
 
 
 /**
