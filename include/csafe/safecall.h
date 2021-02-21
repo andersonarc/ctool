@@ -10,25 +10,48 @@
 #define CSAFE_SAFECALL_H
 
     /* includes */
-#include "csafe/assert.h" /* assertions */
+#include "csafe/assertd.h" /* debug assertions */
+#include "csafe/assertr.h" /* runtime assertions */
 
     /* defines */
 /**
- * @brief perform a safe call to function and set variable to the returned value
+ * @brief perform a safe call to function and set variable to the returned value (with debug assertions)
  * 
- * @param expression is an expression in format 'foo = bar(args)'
+ * @param variable variable name
+ * @param function_call function call expression
  */
-#define sc(expression) \
-    assert_not_null_function_set(expression) \
-    assert_errno()
+#define scd(expression) \
+    assertd_not_null_function_set(variable, function_call) \
+    assertd_errno()
 
 /**
- * @brief perform a safe call to a function
+ * @brief perform a safe call to a function (with debug assertions)
  * 
  * @param function_call function call expression
  */
-#define sc_call(function_call) \
-    assert_not_null_function(function_call) \
-    assert_errno()
+#define scd_call(function_call) \
+    assertd_not_null_function(function_call) \
+    assertd_errno()
+
+/**
+ * @brief perform a safe call to function and set variable to the returned value (with runtime assertions)
+ * 
+ * @param variable variable name
+ * @param function_call function call expression
+ * @param status status to return on safe call failure
+ */
+#define scr(variable, function_call, status) \
+    assertr_not_null_function_set(variable, function_call, status) \
+    assertr_errno(status)
+
+/**
+ * @brief perform a safe call to a function (with runtime assertions)
+ * 
+ * @param function_call function call expression
+ * @param status status to return on safe call failure
+ */
+#define scr_call(function_call) \
+    assertr_not_null_function(function_call, status) \
+    assertr_errno(status)
 
 #endif /* CSAFE_SAFECALL_H */

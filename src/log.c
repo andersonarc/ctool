@@ -11,14 +11,6 @@
 #include <stdio.h>     /* print, stdout, stderr */
 #include <stdarg.h>    /* vararg */
 
-    /* defines */
-/**
- * @brief print a message, for internal use only
- * 
- * @param message string
- */
-#define _csafe_log_message(message) puts(message)
-
     /* functions */
 /**
  * @brief print a formatted message, for internal use only

@@ -6,7 +6,7 @@ project('csafe', 'c',
     license: 'GPL3')
 
 # prepare build files
-src = files('src/assert.c', 'src/log.c')
+src = files('src/log.c')
 include = include_directories('include')
 
 # compile library
