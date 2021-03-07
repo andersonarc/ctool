@@ -19,7 +19,11 @@
 /**
  * @brief csafe runtime assertion
  */
-#define _csafe_assertr(function, condition, message, status) if (condition) { loge(function, message); return status; }
+#define _csafe_assertr(function, condition, message, status) \
+if (condition) {                                             \
+    loge(function, message);                                 \
+    return status;                                           \
+}
 
 /**
  * @brief asserts that variable is not null
@@ -54,17 +58,17 @@
 /**
  * @brief asserts that a is equal to b with custom message
  */
-#define assertr_equals_custom(function, a, b, message, status)       _csafe_assertr(function, !(a == b), "'" #a "' is not equal to '" #b "': " message, status)
+#define assertr_equals_custom(function, a, b, message, status)       _csafe_assertr(function, !(a == b), message, status)
 
 /**
  * @brief assert that condition is true with custom message
  */
-#define assertr_true_custom(function, condition, message, status)    _csafe_assertr(function, !(condition), "condition (" #condition ")" " is false, expected true: " message, status)
+#define assertr_true_custom(function, condition, message, status)    _csafe_assertr(function, !(condition), message, status)
 
 /**
  * @brief assert that condition is false with custom message
  */
-#define assertr_false_custom(function, condition, message, status)    _csafe_assertr(function, (condition), "condition (" #condition ")" " is true, expected false: " message, status)
+#define assertr_false_custom(function, condition, message, status)    _csafe_assertr(function, (condition), message, status)
 
 /**
  * @brief asserts that errno is zero

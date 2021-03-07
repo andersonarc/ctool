@@ -10,9 +10,11 @@
 #define CSAFE_ASSERTD_H
 
     /* includes */
-#include <stdbool.h>   /* bool */
-#include "csafe/log.h" /* logging */
-#include <errno.h>     /* errno */
+#include <stdbool.h>    /* bool */
+#include "csafe/log.h"  /* logging */
+#include "csafe/logf.h" /* formatted logging */
+#include <errno.h>      /* errno */
+#include <string.h>     /* strerror */
 
     /* defines */
 /**
@@ -21,7 +23,10 @@
 #ifdef NDEBUG
     #define _csafe_assertd(function, condition, message)
 #else
-    #define _csafe_assertd(function, condition, message) if (condition) { logfe(function, message); }
+    #define _csafe_assertd(function, condition, message)                         \
+    if (condition) {                                                             \
+        logfe_f(function, message ": errno is %d (%s)", errno, strerror(errno)); \
+    }
 #endif /* NDEBUG */
 
 /**
@@ -57,17 +62,17 @@
 /**
  * @brief assert that a is equal to b with custom message
  */
-#define assertd_equals_custom(function, a, b, message)      _csafe_assertd(function, !(a == b), "'" #a "' is not equal to '" #b "': " message)
+#define assertd_equals_custom(function, a, b, message)      _csafe_assertd(function, !(a == b), message)
 
 /**
  * @brief assert that condition is true with custom message
  */
-#define assertd_true_custom(function, condition, message)   _csafe_assertd(function, !(condition), "(" #condition ")" " is false, expected true: " message)
+#define assertd_true_custom(function, condition, message)   _csafe_assertd(function, !(condition), message)
 
 /**
  * @brief assert that condition is false with custom message
  */
-#define assertd_false_custom(function, condition, message)  _csafe_assertd(function, (condition), "(" #condition ")" " is true, expected false: " message)
+#define assertd_false_custom(function, condition, message)  _csafe_assertd(function, (condition), message)
 
 /**
  * @brief assert that errno is equal to zero
