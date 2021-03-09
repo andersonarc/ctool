@@ -10,9 +10,8 @@
 #define CSAFE_ASSERTD_H
 
     /* includes */
-#include <stdbool.h>    /* bool */
-#include "csafe/log.h"  /* logging */
 #include "csafe/logf.h" /* formatted logging */
+#include <stdbool.h>    /* bool */
 #include <errno.h>      /* errno */
 #include <string.h>     /* strerror */
 

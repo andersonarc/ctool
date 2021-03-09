@@ -6,7 +6,7 @@ project('csafe', 'c',
     license: 'GPL3')
 
 # prepare build files
-src = files('src/log.c')
+src = files()
 test = files('test/main.c')
 include = include_directories('include')
 

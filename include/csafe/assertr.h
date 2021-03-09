@@ -11,9 +11,9 @@
 
     /* includes */
 #include "csafe/status.h" /* return status */
-#include "csafe/log.h" /* logging */
-#include <errno.h>     /* errno */
-#include <stdbool.h>   /* bool */
+#include "csafe/log.h"    /* logging */
+#include <errno.h>        /* errno */
+#include <stdbool.h>      /* bool */
 
     /* defines */
 /**

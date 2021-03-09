@@ -17,10 +17,4 @@ typedef enum status_t {
     ST_OK, ST_FAIL, ST_FILE_FAIL, ST_ALLOC_FAIL, ST_NET_FAIL, ST_BAD_ARG
 } status_t;
 
-    /* defines */
-/**
- * @brief condition check and return with status
-**/
-#define return_if(condition, status) if (condition) { return status; }
-
 #endif /* CSAFE_STATUS_H */
