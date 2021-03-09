@@ -39,7 +39,7 @@
     #define logd_f(function, message, ...)
 #else
     #define logd_f(function, message, ...) log_s_f(function, message, "DEBUG", __VA_ARGS__)
-#endif /* DEBUG */
+#endif /* NDEBUG */
 
 /**
  * @brief formatted info
