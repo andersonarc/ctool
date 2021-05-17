@@ -1,5 +1,4 @@
-# csafe
-### C header collection for safe programming
+# ctool
+### C general purpose library
 
-All documentation is in source code.
-Feel free to include this into your projects (on your own risk...)
+Collection of various utilities that I use in my projects. All documentation is is the source code. Feel free to include this into your projects (on your own risk)
