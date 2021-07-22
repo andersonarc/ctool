@@ -1,10 +1,10 @@
 /**
  * @file log.h
  * @author andersonarc (e.andersonarc@gmail.com)
- * @version 0.1
+ * @version 0.2
  * @date 2021-06-14
  * 
- *  Simple message logging system.
+ *  Simple message logging system
  * 
  *  There are 5 logging levels: debug, info, warning, error 
  *  and fatal error. Debug and info messages are printed to stdout, 
@@ -23,7 +23,7 @@
     /* defines */
 /**
  * Prints a debug message to stdout,
- * only when NDEBUG is undefined.
+ * only when NDEBUG is undefined
  * 
  * @param[in] message The message
  */
@@ -34,21 +34,21 @@
 #endif
 
 /**
- * Prints an info message to stdout.
+ * Prints an info message to stdout
  * 
  * @param[in] message The message
  */
 #define logi(message, ...) _ctool_log_print_info("", "INFO", message, ##__VA_ARGS__)
 
 /**
- * Prints a warning message to stderr.
+ * Prints a warning message to stderr
  * 
  * @param[in] message The message
  */
 #define logw(message, ...) _ctool_log_print_error("!", "WARN", message, ##__VA_ARGS__)
 
 /**
- * Prints an error message to stderr.
+ * Prints an error message to stderr
  * 
  * @param[in] message The message
  */
@@ -56,7 +56,7 @@
 
 /**
  * Prints a fatal error message to stderr
- * and makes the program exit with error code 1.
+ * and makes the program exit with error code 1
  * 
  * @param[in] message The message
  */

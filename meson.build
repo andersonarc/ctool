@@ -2,11 +2,11 @@
 
 # project declaration
 project('ctool', 'c',
-    version: '1.2',
+    version: '1.3',
     license: 'GPL3')
 
 # prepare build files
-src = files('src/thread.c', 'src/log/_internal.c')
+src = files('src/thread.c', 'src/log/_internal.c', 'src/file.c', 'src/io/stream.c')
 include = include_directories('include')
 
 # find dependencies
@@ -38,3 +38,28 @@ assert_test = executable('test_assert',
     files('test/assert.c'),
     dependencies: libctool_dep)
 test('assert_test', assert_test)
+
+arraylist_test = executable('test_arraylist', 
+    files('test/type/arraylist.c'),
+    dependencies: libctool_dep)
+test('arraylist_test', arraylist_test)
+
+list_test = executable('test_list', 
+    files('test/type/list.c'),
+    dependencies: libctool_dep)
+test('list_test', list_test)
+
+optional_test = executable('test_optional', 
+    files('test/type/optional.c'),
+    dependencies: libctool_dep)
+test('optional_test', optional_test)
+
+iteration_test = executable('test_iteration', 
+    files('test/iteration.c'),
+    dependencies: libctool_dep)
+test('iteration_test', iteration_test)
+
+file_test = executable('test_file',
+    files('test/file.c'),
+    dependencies: libctool_dep)
+test('file_test', file_test)

@@ -4,7 +4,7 @@
  * @version 0.1
  * @date 2021-06-14
  * 
- *  Logging system internal code.
+ *  Logging system internal code
  * 
  *  Functions that format log messages and
  *  print them to stdout or stderr.
@@ -20,7 +20,7 @@
     /* defines */
 /**
  * Formats a message for logging with a
- * prefix and a suffix.
+ * prefix and a suffix
  * 
  * @param[in] prefix The prefix
  * @param[in] suffix The suffix
@@ -30,39 +30,39 @@
 
 /**
  * Prints a message with formatting
- * paramters, a prefix and a suffix to stdout.
+ * paramters, a prefix and a suffix to stdout
  * 
  * @param[in] prefix The prefix
  * @param[in] suffix The suffix
  * @param[in] message The message
  */
-#define _ctool_log_print_info(prefix, suffix, message, ...) printf(_ctool_log_message(prefix, suffix, message) "\n", __func__, ##__VA_ARGS__)
+#define _ctool_log_print_info(prefix, suffix, message, ...) printf(_ctool_log_message(prefix, suffix, message) "\n", __func__, ##__VA_ARGS__);
 
 /**
  * Prints a message with formatting
- * paramters, a prefix and a suffix to stderr.
+ * paramters, a prefix and a suffix to stderr
  * 
  * @param[in] prefix The prefix
  * @param[in] suffix The suffix
  * @param[in] message The message
  */
-#define _ctool_log_print_error(prefix, suffix, message, ...) fprintf(stderr, _ctool_log_message(prefix, suffix, message) "\n", __func__, ##__VA_ARGS__); _ctool_log_perrno()
+#define _ctool_log_print_error(prefix, suffix, message, ...) fprintf(stderr, _ctool_log_message(prefix, suffix, message) "\n", __func__, ##__VA_ARGS__); _ctool_log_perrno();
 
 /**
  * Prints a message with formatting
  * paramters, a prefix and a suffix to stderr,
- * then makes the program exit with code 1.
+ * then makes the program exit with code 1
  * 
  * @param[in] prefix The prefix
  * @param[in] suffix The suffix
  * @param[in] message The message
  */
-#define _ctool_log_print_fatal(prefix, suffix, message, ...) fprintf(stderr, _ctool_log_message(prefix, suffix, message) "\n", __func__, ##__VA_ARGS__); _ctool_log_perrno(); exit(1)
+#define _ctool_log_print_fatal(prefix, suffix, message, ...) fprintf(stderr, _ctool_log_message(prefix, suffix, message) "\n", __func__, ##__VA_ARGS__); _ctool_log_perrno(); exit(EXIT_FAILURE);
 
     /* functions */
 /**
  * Prints errno value if it indicates an error,
- * otherwise does nothing.
+ * otherwise does nothing
  */
 void _ctool_log_perrno();
 

@@ -30,9 +30,7 @@
 status_t stream_write(stream_t stream, char* src, size_t count) {
     ssize_t written = write(stream, src, count);
     assertr_false(written < 0, ST_NET_FAIL);
-    if (written == count) {
-        return ST_OK;
-    } else {
+    if (written != count) {
         /* write remaining bytes */
         while (written < count) {
             ssize_t written_now = write(stream, &src[written], count - written);
@@ -41,6 +39,7 @@ status_t stream_write(stream_t stream, char* src, size_t count) {
             written += written_now;
         }
     }
+    return ST_OK;
 }
 
 /**
@@ -58,9 +57,7 @@ status_t stream_write(stream_t stream, char* src, size_t count) {
 status_t stream_read(stream_t stream, char* dest, size_t count) {
     ssize_t received = read(stream, dest, count);
     assertr_false(received < 0, ST_NET_FAIL);
-    if (received == count) {
-        return ST_OK;
-    } else {
+    if (received != count) {
         /* read remaining bytes */
         while (received < count) {
             ssize_t received_now = read(stream, &dest[received], count - received);
@@ -69,4 +66,5 @@ status_t stream_read(stream_t stream, char* dest, size_t count) {
             received += received_now;
         }
     }
+    return ST_OK;
 }

@@ -5,6 +5,10 @@
  * @date 2021-06-15
  * 
  *  Tests for assertion system
+ * 
+ *  These are mostly compilation tests, because
+ *  we can't test for the logging output to be
+ *  correct.
  */
     /* includes */
 #include "ctool/assert.h" /* assertions */
@@ -14,9 +18,9 @@ status_t test_assert_equals() {
     int a = 0;
     int b = 1;
     int c = 0;
-    assertr_equals(a, c, ST_OK);
+    assertr_equals(a, c, ST_FAIL);
     assertd_equals(a, c);
-    assertrc_equals(a, b, ST_FAIL, "%d: assert_equals test passed", 1);
+    assertrc_equals(a, b, ST_OK, "%d: assert_equals test passed", 1);
     return ST_OK;
 }
 
@@ -24,9 +28,9 @@ status_t test_assert_true() {
     int a = 0;
     int b = 1;
     int c = 0;
-    assertr_true(a == c, ST_OK);
+    assertr_true(a == c, ST_FAIL);
     assertd_true(a == c);
-    assertrc_true(a == b, ST_FAIL, "%d: assert_true test passed", 2);
+    assertrc_true(a == b, ST_OK, "%d: assert_true test passed", 2);
     return ST_OK;
 }
 
@@ -34,28 +38,28 @@ status_t test_assert_false() {
     int a = 0;
     int b = 0;
     int c = 1;
-    assertr_false(a != c, ST_FAIL);
-    assertd_false(a != c);
-    assertrc_false(a == b, ST_FAIL, "3: assert_false test passed");
+    assertr_false(a == c, ST_FAIL);
+    assertd_false(a == c);
+    assertrc_false(a == b, ST_OK, "3: assert_false test passed");
     return ST_OK;
 }
 
 status_t test_assert_status() {
     status_t a = ST_OK;
     status_t b = ST_ALLOC_FAIL;
-    assertr_status(a, ST_OK);
+    assertr_status(a, ST_FAIL);
     assertd_status(a);
-    assertrc_status(b, ST_FAIL, "4: assert_status test passed");
+    assertrc_status(b, ST_OK, "4: assert_status test passed");
     return ST_OK;
 }
 
-status_t test_assert_notnull() {
+status_t test_assert_not_null() {
     char a = 'a';
     char* b = &a;
     char* c = NULL;
-    assertr_notnull(b, ST_OK);
-    assertd_notnull(b);
-    assertrc_notnull(c, ST_FAIL, "%s: assert_notnull test passed", "5");
+    assertr_not_null(b, ST_FAIL);
+    assertd_not_null(b);
+    assertrc_not_null(c, ST_OK, "%s: assert_not_null test passed", "5");
     return ST_OK;
 }
 
@@ -67,20 +71,46 @@ status_t test_assert_malloc() {
     return ST_OK;
 }
 
+status_t test_assert_zero() {
+    int a = 0;
+    int b = 1;
+    int c = 0;
+    assertr_zero(a, ST_FAIL);
+    assertd_zero(c);
+    assertrc_zero(ST_OK, b, "%d: assert_zero test passed", 6);
+    return ST_OK;
+}
+
+status_t test_assert_not_equals() {
+    int a = 0;
+    char b = 'b';
+    int c = 0;
+    assertr_not_equals(a, b, ST_FAIL);
+    assertd_not_equals(b, c);
+    assertrc_not_equals(a, c, ST_OK, "%d: assert_zero test passed", 6);
+    return ST_OK;
+}
+
 int main() {
-    if (test_assert_equals() != ST_FAIL) {
+    if (test_assert_equals() != ST_OK) {
         return 1;
     }
-    if (test_assert_true() != ST_FAIL) {
+    if (test_assert_true() != ST_OK) {
         return 1;
     }
-    if (test_assert_false() != ST_FAIL) {
+    if (test_assert_false() != ST_OK) {
         return 1;
     }
-    if (test_assert_status() != ST_FAIL) {
+    if (test_assert_status() != ST_OK) {
         return 1;
     }
-    if (test_assert_malloc() != ST_OK /* not a typo */) {
+    if (test_assert_malloc() != ST_OK) {
+        return 1;
+    }
+    if (test_assert_zero() != ST_OK) {
+        return 1;
+    }
+    if (test_assert_not_equals() != ST_OK) {
         return 1;
     }
     return 0;

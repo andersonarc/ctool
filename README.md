@@ -51,4 +51,16 @@ An example of `task_manager_t` usage could be found in test/thread.c file.
 
 ### **Stream IO**
 
-Undocumented yet, but well-documented in the source code. Check include/ctool/io and src/io.
+Documented in source code, check ctool/io.
+
+### **Data types**
+
+Type-generic `list`, `arraylist` and `optional` types are defined in ctool/type.
+
+### **File utilities**
+
+Documented in source code, check ctool/file.h.
+
+### **Iteration utilities**
+
+Documented in source code, check ctool/iteration.h.

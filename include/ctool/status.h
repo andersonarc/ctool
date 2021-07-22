@@ -4,7 +4,7 @@
  * @version 0.3
  * @date 2021-02-15
  * 
- *  Return status for functions.
+ *  Return status for functions
  * 
  *  Type definition of an enum with codes
  *  for common function exit cases, such as

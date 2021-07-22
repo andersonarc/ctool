@@ -4,12 +4,12 @@
  * @version 0.6
  * @date 2021-02-08
  * 
- *  Buffered stream IO system.
+ *  Buffered stream IO system
  * 
  *  An abstraction built on top of a stream wrapper, 
  *  which allows you to write and read data from a
  *  stream using an internal buffer, where you can
- *  accumulate that data. 
+ *  accumulate that data with bstream_push macro.
  */
     /* header guard */
 #ifndef CTOOL_IO_BUFFER_H
@@ -19,29 +19,33 @@
 #include <stdlib.h> /* memory functions and size_t */
 #include "ctool/io/stream.h" /* stream io */
 #include "ctool/assert/runtime.h" /* runtime assertions */
+#include "ctool/iteration.h" /* index_t */
 
     /* typedefs */
 /**
- * Buffered stream structure.
+ * Buffered stream structure
  */
 typedef struct buffered_stream_t {
     size_t size;
-    size_t index;
+    index_t index;
     stream_t stream;
     char* data;
 } buffered_stream_t;
 
 /**
- * Shorthand name for the buffered stream data type.
+ * Shorthand alias for the buffered stream data type
  */
 typedef buffered_stream_t bstream_t;
 
     /* functions */
 /**
- * Returns a pointer to the current position in a buffered stream.
+ * Returns a pointer to the current position in a buffered stream
  * 
- * @warning Buffer index should be increased after modification
- * @warning Wrong usage could lead to buffer overflow
+ * @warning Buffer index should be increased after modification 
+ *              with bstream_increase()
+ * 
+ * @warning Manual usage of this function is unrecommended,
+ *              prefer bstream_push macro instead
  * 
  * @param[in] bstream Pointer to the buffered stream structure
  * 
@@ -52,17 +56,43 @@ static inline char* bstream_position(bstream_t* bstream) {
 }
 
 /**
- * Increases the index of a buffered stream.
+ * Increases the index of a buffered stream
+ * 
+ * @warning Manual usage of this function is unrecommended,
+ *              prefer bstream_push macro instead
  * 
  * @param[in] bstream Pointer to the buffered stream structure
- * @param[in] count  Number of bytes to add for index
+ * @param[in] count   Number of bytes to add for index
  */
 static inline void bstream_increase(bstream_t* bstream, size_t count) {
     bstream->index += count;
 }
 
 /**
- * Binds a stream to a buffered stream.
+ * Pushes a primitive value to the buffer of
+ * a buffered stream
+ * 
+ * @param[in] bstream Pointer to the buffered stream structure
+ * @param[in] value   Primitive value (int, char, ...) that must not be a pointer
+ */
+#define bstream_push_primitive(bstream, value) \
+    bstream_position(bstream) = value;         \
+    bstream_increase(bstream, sizeof(value));
+
+/**
+ * Pushes a single-dimensional array of primitive values
+ * to the buffer of a buffered stream
+ * 
+ * @param[in] bstream Pointer to the buffered stream structure
+ * @param[in] array   Array of primitive values (int, char, ...) which must not be pointers
+ * @param[in] size    Size of the array (number of elements)
+ */
+#define bstream_push_array(bstream, array, size)                     \
+    memcpy(bstream_position(bstream), array, size * sizeof(*array)); \
+    bstream_increase(size * sizeof(*array));
+
+/**
+ * Binds a stream to a buffered stream
  * 
  * @warning Do not forget to close the stream after usage
  *
@@ -74,14 +104,14 @@ static inline void bstream_bind(bstream_t* bstream, stream_t stream) {
 }
 
 /**
- * Allocates a buffer for a buffered stream.
+ * Allocates a buffer for a buffered stream
  * 
  * @warning Do not forget to free the buffer after usage
  *
  * @param[in] bstream Pointer to the buffered stream structure
  * @param[in] size    Buffer size
  * 
- * @return ST_ALLOC_FAIL if the allocation fails, otherwise ST_OK
+ * @return ST_ALLOC_FAIL if an allocation fails, otherwise ST_OK
  */
 static inline status_t bstream_allocate(bstream_t* bstream, size_t size) {
     assertr_malloc(bstream->data, size, char*)
@@ -91,7 +121,7 @@ static inline status_t bstream_allocate(bstream_t* bstream, size_t size) {
 
 /**
  * Assigns an already allocated buffer to a 
- * buffered stream.
+ * buffered stream
  *
  * @param[in] bstream Pointer to the buffered stream structure
  * @param[in] buffer  Pointer to the buffer
@@ -104,7 +134,7 @@ static inline void bstream_assign(bstream_t* bstream, char* buffer, size_t size)
 
 /**
  * Fills the buffer of a buffered stream with data 
- * from a previously bound stream.
+ * from a previously bound stream
  * 
  * @param[in] bstream Pointer to the buffered stream structure
  * 
@@ -115,7 +145,7 @@ static inline status_t bstream_read(bstream_t* bstream) {
 }
 
 /**
- * Frees allocated memory for a buffered stream.
+ * Frees allocated memory for a buffered stream
  *
  * @param[in] bstream Pointer to the buffered stream structure
  */
@@ -125,7 +155,7 @@ static inline void bstream_free(bstream_t* bstream) {
 
 /**
  * Writes the buffer of a buffered stream
- * into a previously bound stream.
+ * into a previously bound stream
  * 
  * @param[in] bstream Pointer to the buffered stream structure
  * 

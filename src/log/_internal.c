@@ -18,6 +18,6 @@
 void _ctool_log_perrno() {
     int value = errno;
     if (value != 0) {
-        fprintf(stderr, "[ERRNO] %s", strerror(value));
+        fprintf(stderr, "[ERRNO] %s\n", strerror(value));
     }
 }

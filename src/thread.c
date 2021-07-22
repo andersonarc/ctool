@@ -4,7 +4,7 @@
  * @version 0.2
  * @date 2021-05-17
  *  
- *  An implementation of a thread pool pattern for multi-threaded task execution.
+ *  An implementation of a thread pool pattern for multi-threaded task execution
  *  
  *  If `CTOOL_THREAD_USE_POSIX` is defined, pthreads will be preferred over
  *  C11 threads for thread control. Thread safety is ensured by atomic index 
@@ -12,19 +12,20 @@
  */
     /* includes */
 #include "ctool/thread.h" /* this */
-#include "ctool/assert/runtime.h" /* runtime assertions */
 #include <time.h> /* sleep */
+#include "ctool/assert/runtime.h" /* runtime assertions */
+#include "ctool/iteration.h" /* range iteration */
 
     /* static content */
 /**
- * Default time for waiting (100 milliseconds).
+ * Default time for waiting (100 milliseconds)
  */
 const struct timespec idle_time = { 0, 100000000 };
 
     /* defines */
 /**
  * Initializes a thread instance and
- * executes a task list on it.
+ * executes a task list on it
  * 
  * @param[in] thread Pointer to the thread
  * @param[in] tasks  The task list
@@ -40,7 +41,7 @@ const struct timespec idle_time = { 0, 100000000 };
     /* functions */
 /**
  * Executes a task list concurrently with
- * other threads.
+ * other threads
  * 
  * @param[in] tasks The task list
  * 
@@ -70,7 +71,7 @@ task_output_t task_thread_main(task_list_t* tasks) {
 
 /**
  * Creates a new task manager with specified
- * number of threads in a thread pool.
+ * number of threads in a thread pool
  * 
  * @param[in] manager The task manager
  * @param[in] threads The number of threads
@@ -86,8 +87,9 @@ status_t task_manager_create(task_manager_t* manager, size_t threads) {
     manager->tasks.data = NULL;
     manager->tasks.index = 0;
     manager->tasks.size = 0;
-    for (size_t i = 0; i < threads; i++) {
-        assertr_equals(thread_initialize(&manager->pool.data[i], &manager->tasks), 0, ST_FAIL);
+    iterate_array(i, threads) {
+        assertr_zero(thread_initialize(&manager->pool.data[i], &manager->tasks), 
+            ST_FAIL);
     }
     return ST_OK;
 }
@@ -95,7 +97,7 @@ status_t task_manager_create(task_manager_t* manager, size_t threads) {
 /**
  * Creates a new task manager with specified
  * number of threads in a thread pool and executes
- * a list of tasks on it.
+ * a list of tasks on it
  * 
  * @param[in] manager The task manager
  * @param[in] tasks   The task list
@@ -109,25 +111,28 @@ status_t task_manager_create_run(task_manager_t* manager, task_list_t tasks, siz
     manager->pool.size = threads;
     assertr_malloc(manager->pool.data, sizeof(thread_t) * threads, thread_t*)
     manager->tasks = tasks;
-    for (size_t i = 0; i < threads; i++) {
-        assertr_equals(thread_initialize(&manager->pool.data[i], &manager->tasks), 0, ST_FAIL);
+    iterate_array(i, threads) {
+        assertr_zero(thread_initialize(&manager->pool.data[i], &manager->tasks), 
+            ST_FAIL);
     }
     return ST_OK;
 }
 
 /**
- * Deletes a task manager.
+ * Deletes a task manager
+ * 
+ * The task list is freed automatically.
  * 
  * @param[in] manager The task manager
  */
 void task_manager_delete(task_manager_t* manager) {
     manager->tasks.status = CTOOL_TASK_LIST_STOPPED;
     free(manager->pool.data);
-    free(manager->tasks.data);
+    task_list_free(&manager->tasks);
 }
 
 /**
- * Submits a task list to a task manager.
+ * Submits a task list to a task manager
  * 
  * Previous task list is freed automatically.
  * 
@@ -140,15 +145,15 @@ void task_manager_delete(task_manager_t* manager) {
 status_t task_manager_submit(task_manager_t* manager, task_list_t tasks) {
     assertrc_false(manager->tasks.status == CTOOL_TASK_LIST_RUNNING, ST_FAIL, 
         "previous tasks haven't completed yet, use task_manager_await() to wait for them")
-    free(manager->tasks.data);
+    task_list_free(&manager->tasks);
     manager->tasks = tasks;
     return ST_OK;
 }
 
 /**
- * Waits for a task manager to finish all tasks.
+ * Waits for a task manager to finish all tasks
  * 
- * @param manager The task manager
+ * @param[in] manager The task manager
  */
 void task_manager_await(task_manager_t* manager) {
     while (manager->tasks.status == CTOOL_TASK_LIST_RUNNING) {
@@ -157,10 +162,10 @@ void task_manager_await(task_manager_t* manager) {
 }
 
 /**
- * Initializes a task list and allocates memory for it.
+ * Initializes a task list and allocates memory for it
  * 
- * @param tasks The task list
- * @param size  Tasks count
+ * @param[in] tasks The task list
+ * @param[in] size  Tasks count
  * 
  * @return ST_ALLOC_FAIL if an allocation fails, otherwise ST_OK
  */

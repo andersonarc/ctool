@@ -5,6 +5,10 @@
  * @date 2021-06-15
  * 
  *  Tests for logging system
+ * 
+ *  These are mostly compilation tests, because
+ *  we can't test for the logging output to be
+ *  correct.
  */
     /* includes */
 #include "ctool/log.h" /* logging */

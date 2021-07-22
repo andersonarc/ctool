@@ -4,7 +4,7 @@
  * @version 0.2
  * @date 2021-05-17
  * 
- *  An implementation of a thread pool pattern for multi-threaded task execution.
+ *  An implementation of a thread pool pattern for multi-threaded task execution
  *  
  *  If `CTOOL_THREAD_USE_POSIX` is defined, pthreads will be preferred over
  *  C11 threads for thread control. Thread safety is ensured by atomic index 
@@ -18,6 +18,7 @@
 
     /* includes */
 #include <stdatomic.h> /* atomic types */
+#include <stdlib.h> /* free() */
 
 #ifdef CTOOL_THREAD_USE_POSIX
     #include <pthread.h> /* posix threads api */
@@ -29,12 +30,12 @@
 
     /* typedefs */
 /**
- * Input value for a task function.
+ * Input value for a task function
  */
 typedef void* task_input_t;
 
 /**
- * Output value for a task function.
+ * Output value for a task function
  */
 #ifdef CTOOL_THREAD_USE_POSIX
     typedef void* task_output_t;
@@ -43,7 +44,7 @@ typedef void* task_input_t;
 #endif
 
 /**
- * Default task output.
+ * Default task output
  */
 #ifdef CTOOL_THREAD_USE_POSIX 
     #define task_output_default NULL
@@ -52,17 +53,17 @@ typedef void* task_input_t;
 #endif
 
 /**
- * Default task input.
+ * Default task input
  */
 #define task_input_default NULL
 
 /**
- * Task function type.
+ * Task function type
  */
 typedef task_output_t(*task_function_t)(task_input_t);
 
 /**
- * Task structure.
+ * Task structure
  */
 typedef struct task_t {
     task_function_t function;
@@ -70,14 +71,14 @@ typedef struct task_t {
 } task_t;
 
 /**
- * Task list execution status.
+ * Task list execution status
  */
 typedef enum task_list_status_t {
     CTOOL_TASK_LIST_WAITING, CTOOL_TASK_LIST_STOPPED, CTOOL_TASK_LIST_RUNNING
 } task_list_status_t;
 
 /**
- * Task list structure.
+ * Task list structure
  */
 typedef struct task_list_t {
     atomic_int status;
@@ -87,7 +88,7 @@ typedef struct task_list_t {
 } task_list_t;
 
 /**
- * Thread type.
+ * Thread type
  */
 #ifdef CTOOL_THREAD_USE_POSIX 
     typedef pthread_t thread_t;
@@ -97,7 +98,7 @@ typedef struct task_list_t {
 
 
 /**
- * Thread pool structure.
+ * Thread pool structure
  */
 typedef struct thread_pool_t {
     size_t size;
@@ -105,7 +106,7 @@ typedef struct thread_pool_t {
 } thread_pool_t;
 
 /**
- * Task manager structure.
+ * Task manager structure
  */
 typedef struct task_manager_t {
     thread_pool_t pool;
@@ -115,7 +116,7 @@ typedef struct task_manager_t {
     /* functions */
 /**
  * Creates a new task manager with specified
- * number of threads in a thread pool.
+ * number of threads in a thread pool
  * 
  * @param[in] manager The task manager
  * @param[in] threads The number of threads
@@ -129,7 +130,7 @@ status_t task_manager_create(task_manager_t* manager, size_t threads);
 /**
  * Creates a new task manager with specified
  * number of threads in a thread pool and executes
- * a list of tasks on it.
+ * a list of tasks on it
  * 
  * @param[in] manager The task manager
  * @param[in] tasks   The task list
@@ -142,14 +143,16 @@ status_t task_manager_create(task_manager_t* manager, size_t threads);
 status_t task_manager_create_run(task_manager_t* manager, task_list_t tasks, size_t threads);
 
 /**
- * Deletes a task manager and frees it's task list.
+ * Deletes a task manager
+ * 
+ * The task list is freed automatically.
  * 
  * @param[in] manager The task manager
  */
 void task_manager_delete(task_manager_t* manager);
 
 /**
- * Submits a task list to a task manager.
+ * Submits a task list to a task manager
  * 
  * Previous task list is freed automatically.
  * 
@@ -162,20 +165,29 @@ void task_manager_delete(task_manager_t* manager);
 status_t task_manager_submit(task_manager_t* manager, task_list_t tasks);
 
 /**
- * Waits for a task manager to finish all tasks.
+ * Waits for a task manager to finish all tasks
  * 
- * @param manager The task manager
+ * @param[in] manager The task manager
  */
 void task_manager_await(task_manager_t* manager);
 
 /**
- * Initializes a task list and allocates memory for it.
+ * Initializes a task list and allocates memory for it
  * 
- * @param tasks The task list
- * @param size  Tasks count
+ * @param[in] tasks The task list
+ * @param[in] size  Tasks count
  * 
  * @return ST_ALLOC_FAIL if an allocation fails, otherwise ST_OK
  */
 status_t task_list_init(task_list_t* tasks, size_t size);
+
+/**
+ * Frees memory allocated for a task list
+ * 
+ * @param[in] tasks The task list
+ */
+static inline void task_list_free(task_list_t* tasks) {
+    free(tasks->data);
+}
 
 #endif /* CTOOL_THREAD_H */

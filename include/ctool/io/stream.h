@@ -4,7 +4,7 @@
  * @version 0.3
  * @date 2021-06-17
  * 
- *  Stream abstraction for sockets.
+ *  Stream abstraction for sockets
  * 
  *  Smart wrappers for POSIX read() and write() functions.
  *  Streams should be opened and closed manually.
@@ -25,7 +25,7 @@ typedef int stream_t;
 
     /* functions */
 /**
- * Writes specified amount of bytes to a stream.
+ * Writes specified amount of bytes to a stream
  * 
  * If the implementation fails to write all bytes at once,
  * it keeps trying while at least 1 byte is written to the stream.
