@@ -34,6 +34,13 @@
 #define arraylist_init(type) _ctool_generic_function(arraylist, type, init)
 #define arraylist_free(type) _ctool_generic_function(arraylist, type, free)
 
+/**
+ * Returns the last element of an arraylist
+ * 
+ * @param[in] list The arraylist
+ */
+#define arraylist_last(list) list.data[list.size - 1]
+
 //todo check for existing arraylist
 
 /**
