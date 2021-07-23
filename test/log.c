@@ -19,5 +19,5 @@ int main() {
     logw("2: warning logging test passed");
     loge("%s: error logging test passed", "3");
     logd("4: debug logging test passed");
-    return 0;
+    return EXIT_SUCCESS;
 }

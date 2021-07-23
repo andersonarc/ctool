@@ -10,6 +10,7 @@
  */
     /* includes */
 #include <stdint.h> /* int types */
+#include <stdlib.h> /* EXIT_SUCCESS */
 #include "ctool/type/optional.h" /* generic optional type */
 
     /* typedefs */
@@ -25,5 +26,5 @@ optional_declare(sample_struct);
 
     /* main function */
 int main() {
-    return 0;
+    return EXIT_SUCCESS;
 }

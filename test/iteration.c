@@ -69,7 +69,7 @@ status_t test_iterate_range() {
     /* main function */
 int main() {
     if (test_iterate_range() != ST_OK) {
-        return 1;
+        return EXIT_FAILURE;
     }
-    return 0;
+    return EXIT_SUCCESS;
 }

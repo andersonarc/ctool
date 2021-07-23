@@ -34,6 +34,8 @@
 #define arraylist_init(type) _ctool_generic_function(arraylist, type, init)
 #define arraylist_free(type) _ctool_generic_function(arraylist, type, free)
 
+//todo check for existing arraylist
+
 /**
  * Declares an arraylist of specified type
  * 

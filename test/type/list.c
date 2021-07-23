@@ -5,8 +5,6 @@
  * @date 2021-07-05
  * 
  *  Tests for the generic list type
- * 
- *  This is a pure compilation test.
  */
     /* includes */
 #include <stdint.h> /* int types */
@@ -23,7 +21,42 @@ list_declare(char);
 list_declare(uint32_t);
 list_declare(sample_struct);
 
+    /* generic definitions */
+list_define(char);
+list_define(uint32_t);
+list_define(sample_struct);
+
+    /* functions */
+/**
+ * Tests list initialization
+ * 
+ * @return ST_FAIL on error,
+ *          otherwise ST_OK 
+ */
+status_t test_list_init() {
+    char_list_t a;
+    list(uint32_t) b;
+    sample_struct_list_t c;
+
+    assertr_status(list_init(char)(&a, 5), ST_FAIL);
+    assertr_equals(a.size, 5, ST_FAIL);
+    assertr_status(uint32_t_list_init(&b, 0), ST_FAIL);
+    assertr_equals(b.size, 0, ST_FAIL);
+    assertr_status(sample_struct_list_init(&c, 10), ST_FAIL);
+    assertr_not_null(c.data, ST_FAIL);
+    
+    list_free(char)(&a);
+    uint32_t_list_free(&b);
+    sample_struct_list_free(&c);
+
+    return ST_OK;
+}
+
     /* main function */
 int main() {
-    return 0;
+    if (test_list_init() != ST_OK) {
+        return EXIT_FAILURE;
+    }
+
+    return EXIT_SUCCESS;
 }

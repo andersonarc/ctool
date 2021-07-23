@@ -191,19 +191,19 @@ status_t test_file_line_info_4() {
     /* main function */
 int main() {
     if (test_file_size() != ST_OK) {
-        return 1;
+        return EXIT_FAILURE;
     }
     if (test_file_line_info_1() != ST_OK) {
-        return 1;
+        return EXIT_FAILURE;
     }
     if (test_file_line_info_2() != ST_OK) {
-        return 1;
+        return EXIT_FAILURE;
     }
     if (test_file_line_info_3() != ST_OK) {
-        return 1;
+        return EXIT_FAILURE;
     }
     if (test_file_line_info_4() != ST_OK) {
-        return 1;
+        return EXIT_FAILURE;
     }
-    return 0;
+    return EXIT_SUCCESS;
 }

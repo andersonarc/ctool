@@ -247,17 +247,17 @@ status_t test_arraylist_trim() {
     /* main function */
 int main() {
     if (test_arraylist_init() != ST_OK) {
-        return 1;
+        return EXIT_FAILURE;
     }
     if (test_arraylist_add() != ST_OK) {
-        return 1;
+        return EXIT_FAILURE;
     }
     if (test_arraylist_remove() != ST_OK) {
-        return 1;
+        return EXIT_FAILURE;
     }
     if (test_arraylist_trim() != ST_OK) {
-        return 1;
+        return EXIT_FAILURE;
     }
 
-    return 0;
+    return EXIT_SUCCESS;
 }

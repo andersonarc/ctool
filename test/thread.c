@@ -127,5 +127,5 @@ int main() {
 
     logi("performing cleanup");
     task_manager_delete(&manager);
-    return 0;
+    return EXIT_SUCCESS;
 }

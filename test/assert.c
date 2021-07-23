@@ -93,25 +93,25 @@ status_t test_assert_not_equals() {
 
 int main() {
     if (test_assert_equals() != ST_OK) {
-        return 1;
+        return EXIT_FAILURE;
     }
     if (test_assert_true() != ST_OK) {
-        return 1;
+        return EXIT_FAILURE;
     }
     if (test_assert_false() != ST_OK) {
-        return 1;
+        return EXIT_FAILURE;
     }
     if (test_assert_status() != ST_OK) {
-        return 1;
+        return EXIT_FAILURE;
     }
     if (test_assert_malloc() != ST_OK) {
-        return 1;
+        return EXIT_FAILURE;
     }
     if (test_assert_zero() != ST_OK) {
-        return 1;
+        return EXIT_FAILURE;
     }
     if (test_assert_not_equals() != ST_OK) {
-        return 1;
+        return EXIT_FAILURE;
     }
-    return 0;
+    return EXIT_SUCCESS;
 }
