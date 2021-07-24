@@ -27,7 +27,7 @@
  * @param[in] type Type of the arraystack
  */
 #define arraystack(type) _ctool_generic_type(arraystack, type)
-#define arraystack_push(type) _ctool_generic_function(arraystack, type, add)
+#define arraystack_push(type) _ctool_generic_function(arraystack, type, push)
 #define arraystack_pop(type) _ctool_generic_function(arraystack, type, pop)
 #define arraystack_trim(type) _ctool_generic_function(arraystack, type, trim)
 #define arraystack_init(type) _ctool_generic_function(arraystack, type, init)
@@ -120,6 +120,9 @@ status_t arraystack_init(type)(arraystack(type)* stack, size_t size);  \
  */                                                                    \
 static inline void arraystack_free(type)(arraystack(type)* stack) {    \
     free(stack->data);                                                 \
+    stack->data = NULL;                                                \
+    stack->_allocated_size = 0;                                        \
+    stack->size = 0;                                                   \
 }                                                                   
 
 
@@ -149,17 +152,23 @@ static inline void arraystack_free(type)(arraystack(type)* stack) {    \
 status_t arraystack_push(type)(arraystack(type)* stack, type element) { \
     /* check for free space */                    \
     if (stack->size == stack->_allocated_size) {  \
-        /* check for empty array */               \
-        if (stack->_allocated_size == 0) {        \
+        /* new pointer */                         \
+        type* pointer;                            \
+                                                  \
+        /* check for empty stack */               \
+        if (stack->_allocated_size == 0 || stack->data == NULL) { \
             /* first allocation */                \
             stack->_allocated_size = 2;           \
+                                                  \
+            /* allocate memory */                 \
+            pointer = (type*) malloc(2 * sizeof(type)); \
         } else {                                  \
             /* increase allocated length */       \
             stack->_allocated_size *= 2;          \
-        }                                         \
                                                   \
-        /* reallocate memory */                   \
-        type* pointer = (type*) realloc(stack->data, stack->_allocated_size * sizeof(type)); \
+            /* reallocate memory */               \
+            pointer = (type*) realloc(stack->data, stack->_allocated_size * sizeof(type)); \
+        }                                         \
                                                   \
         /* null check */                          \
         if (pointer == NULL) {                    \
@@ -229,49 +238,62 @@ status_t arraystack_pop(type)(arraystack(type)* stack) {     \
  *          otherwise ST_OK                            \
  */                                                    \
 status_t arraystack_trim(type)(arraystack(type)* stack) { \
-    /* reallocate memory */                            \
-    type* pointer = (type*) realloc(stack->data, stack->size * sizeof(type)); \
-                                                       \
-        /* null check */                               \
-    if (pointer == NULL) {                             \
-        /* log an error */                             \
-        loge("memory reallocation failed while trimming a " macro_stringify(arraystack(type)) \
+    /* if the stack is unallocated, return */             \
+    if (stack->_allocated_size == 0) {                    \
+        logw("attempted to trim an unallocated " macro_stringify(arraystack(type)) \
                 " with size %zu and allocated size %zu", stack->size, stack->_allocated_size); \
-                                                       \
-        /* fail */                                     \
-        return ST_ALLOC_FAIL;                          \
+        return ST_OK;                                     \
+    }                                                     \
+                                                          \
+    /* if the stack is empty, free memory */              \
+    if (stack->size == 0) {                               \
+        free(stack->data);                                \
+        stack->data = NULL;                               \
+    } else {                                              \
+        /* else, reallocate memory */                     \
+        type* pointer = (type*) realloc(stack->data, stack->size * sizeof(type)); \
+                                                          \
+        /* null check */                                  \
+        if (pointer == NULL) {                            \
+            /* log an error */                            \
+            loge("memory reallocation failed while trimming a " macro_stringify(arraystack(type)) \
+                    " with size %zu and allocated size %zu", stack->size, stack->_allocated_size); \
+                                                          \
+            /* fail */                                    \
+            return ST_ALLOC_FAIL;                         \
+        }                                                 \
+                                                          \
+        /* assign new pointer */                          \
+        stack->data = pointer;                            \
     }                                                  \
                                                        \
-    /* assign new pointer */                           \
-    stack->data = pointer;                              \
-                                                       \
     /* change allocated size */                        \
-    stack->_allocated_size = stack->size;                \
+    stack->_allocated_size = stack->size;              \
                                                        \
     /* success */                                      \
     return ST_OK;                                      \
 }                                                      \
                                                        \
 /**                                                    \
- * Initializes an arraystack with preallocated          \
+ * Initializes an arraystack with preallocated         \
  * memory for a specified number of elements,          \
  * which can be changed later via                      \
  * add or remove methods                               \
  *                                                     \
- * @param[in] stack The arraystack                       \
+ * @param[in] stack The arraystack                     \
  * @param[in] size The number of elements              \
  *                                                     \
  * @return ST_ALLOC_FAIL if an allocation fails,       \
  *          otherwise ST_OK                            \
  */                                                    \
 status_t arraystack_init(type)(arraystack(type)* stack, size_t size) { \
-    stack->size = 0;                                                 \
-    stack->_allocated_size = size;                                   \
-    assertr_malloc(stack->data, sizeof(type) * size, type*)          \
-                                                                    \
-    /* success */                                                   \
-    return ST_OK;                                                   \
-}                                                                   \
+    stack->size = 0;                                                   \
+    stack->_allocated_size = size;                                     \
+    assertr_malloc(stack->data, sizeof(type) * size, type*)            \
+                                                                       \
+    /* success */                                                      \
+    return ST_OK;                                                      \
+}                                                                      \
 
 
 

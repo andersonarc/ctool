@@ -123,6 +123,9 @@ status_t arraylist_init(type)(arraylist(type)* list, size_t size);  \
  */                                                                 \
 static inline void arraylist_free(type)(arraylist(type)* list) {    \
     free(list->data);                                               \
+    list->data = NULL;                                              \
+    list->_allocated_size = 0;                                      \
+    list->size = 0;                                                 \
 }                                                                   
 
 
@@ -152,17 +155,23 @@ static inline void arraylist_free(type)(arraylist(type)* list) {    \
 status_t arraylist_add(type)(arraylist(type)* list, type element) { \
     /* check for free space */                    \
     if (list->size == list->_allocated_size) {    \
-        /* check for empty array */               \
-        if (list->_allocated_size == 0) {         \
+        /* new pointer */                         \
+        type* pointer;                            \
+                                                  \
+        /* check for empty list */                \
+        if (list->_allocated_size == 0 || list->data == NULL) { \
             /* first allocation */                \
             list->_allocated_size = 2;            \
+                                                  \
+            /* allocate memory */                 \
+            pointer = (type*) malloc(2 * sizeof(type)); \
         } else {                                  \
             /* increase allocated length */       \
             list->_allocated_size *= 2;           \
-        }                                         \
                                                   \
-        /* reallocate memory */                   \
-        type* pointer = (type*) realloc(list->data, list->_allocated_size * sizeof(type)); \
+            /* reallocate memory */               \
+            pointer = (type*) realloc(list->data, list->_allocated_size * sizeof(type)); \
+        }                                         \
                                                   \
         /* null check */                          \
         if (pointer == NULL) {                    \
@@ -234,33 +243,46 @@ status_t arraylist_remove(type)(arraylist(type)* list, index_t index) {   \
 }                                                      \
                                                        \
 /**                                                    \
- * Reallocates the internal array of an arraylist      \
+ * Reallocates the internal array of an arraylist     \
  * to be the same size as the number of elements       \
  *                                                     \
- * @param[in] list The arraylist                       \
+ * @param[in] list The arraylist                     \
  *                                                     \
  * @return ST_ALLOC_FAIL if an allocation fails,       \
  *          otherwise ST_OK                            \
  */                                                    \
 status_t arraylist_trim(type)(arraylist(type)* list) { \
-    /* reallocate memory */                            \
-    type* pointer = (type*) realloc(list->data, list->size * sizeof(type)); \
-                                                       \
-        /* null check */                               \
-    if (pointer == NULL) {                             \
-        /* log an error */                             \
-        loge("memory reallocation failed while trimming a " macro_stringify(arraylist(type)) \
+    /* if the list is unallocated, return */             \
+    if (list->_allocated_size == 0) {                    \
+        logw("attempted to trim an unallocated " macro_stringify(arraylist(type)) \
                 " with size %zu and allocated size %zu", list->size, list->_allocated_size); \
-                                                       \
-        /* fail */                                     \
-        return ST_ALLOC_FAIL;                          \
-    }                                                  \
-                                                       \
-    /* assign new pointer */                           \
-    list->data = pointer;                              \
-                                                       \
-    /* change allocated size */                        \
-    list->_allocated_size = list->size;                \
+        return ST_OK;                                     \
+    }                                                     \
+                                                          \
+    /* if the list is empty, free memory */               \
+    if (list->size == 0) {                                \
+        free(list->data);                                 \
+        list->data = NULL;                                \
+    } else {                                              \
+        /* else, reallocate memory */                     \
+        type* pointer = (type*) realloc(list->data, list->size * sizeof(type)); \
+                                                          \
+        /* null check */                                  \
+        if (pointer == NULL) {                            \
+            /* log an error */                            \
+            loge("memory reallocation failed while trimming a " macro_stringify(arraylist(type)) \
+                    " with size %zu and allocated size %zu", list->size, list->_allocated_size); \
+                                                          \
+            /* fail */                                    \
+            return ST_ALLOC_FAIL;                         \
+        }                                                 \
+                                                          \
+        /* assign new pointer */                          \
+        list->data = pointer;                             \
+    }                                                     \
+                                                          \
+    /* change allocated size */                           \
+    list->_allocated_size = list->size;                   \
                                                        \
     /* success */                                      \
     return ST_OK;                                      \
