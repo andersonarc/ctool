@@ -29,10 +29,12 @@
  */
 #define arraylist(type) _ctool_generic_type(arraylist, type)
 #define arraylist_add(type) _ctool_generic_function(arraylist, type, add)
+#define arraylist_push arraylist_add
 #define arraylist_remove(type) _ctool_generic_function(arraylist, type, remove)
 #define arraylist_trim(type) _ctool_generic_function(arraylist, type, trim)
 #define arraylist_init(type) _ctool_generic_function(arraylist, type, init)
 #define arraylist_free(type) _ctool_generic_function(arraylist, type, free)
+#define arraylist_pop(type) _ctool_generic_function(arraylist, type, pop)
 
 /**
  * Returns the last element of an arraylist
@@ -47,13 +49,6 @@
  * @param[in] list The arraylist
  */
 #define arraylist_is_empty(list) (list.size == 0)
-
-/**
- * Removes the last element of an arraylist
- * 
- * @param[in] list The arraylist
- */
-#define arraylist_pop(type, list) arraylist_remove(type)(&list, list.size - 1)
 
 /**
  * Declares an arraylist of specified type
@@ -131,7 +126,16 @@ static inline void arraylist_free(type)(arraylist(type)* list) {    \
     list->data = NULL;                                              \
     list->_allocated_size = 0;                                      \
     list->size = 0;                                                 \
-}                                                                   
+}                                                                   \
+                                                                    \
+/**                                                                 \
+ * Removes the last element of an arraylist                         \
+ *                                                                  \
+ * @param[in] list The arraylist                                    \
+ */                                                                 \
+static inline status_t arraylist_pop(type)(arraylist(type)* list) { \
+    return arraylist_remove(type)(list, list->size - 1);            \
+}
 
 
 
@@ -308,19 +312,14 @@ status_t arraylist_trim(type)(arraylist(type)* list) { \
 status_t arraylist_init(type)(arraylist(type)* list, size_t size) { \
     list->size = 0;                                                 \
     list->_allocated_size = size;                                   \
-    assertr_malloc(list->data, sizeof(type) * size, type*)          \
+    if (size == 0) {                                                \
+        list->data = NULL;                                          \
+    } else {                                                        \
+        assertr_malloc(list->data, sizeof(type) * size, type*)      \
+    }                                                               \
                                                                     \
     /* success */                                                   \
     return ST_OK;                                                   \
 }                                                                   \
-
-
-
-/**
- * Creates an empty instance of an arraylist
- * 
- * @return Empty arraylist structure
- */
-#define arraylist_init_empty {0, 0, NULL}
 
 #endif /* CTOOL_TYPE_ARRAYLIST_H */
