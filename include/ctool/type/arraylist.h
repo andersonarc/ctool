@@ -48,7 +48,12 @@
  */
 #define arraylist_is_empty(list) (list.size == 0)
 
-//todo check for existing arraylist
+/**
+ * Removes the last element of an arraylist
+ * 
+ * @param[in] list The arraylist
+ */
+#define arraylist_pop(type, list) arraylist_remove(type)(&list, list.size - 1)
 
 /**
  * Declares an arraylist of specified type
@@ -243,10 +248,10 @@ status_t arraylist_remove(type)(arraylist(type)* list, index_t index) {   \
 }                                                      \
                                                        \
 /**                                                    \
- * Reallocates the internal array of an arraylist     \
+ * Reallocates the internal array of an arraylist      \
  * to be the same size as the number of elements       \
  *                                                     \
- * @param[in] list The arraylist                     \
+ * @param[in] list The arraylist                       \
  *                                                     \
  * @return ST_ALLOC_FAIL if an allocation fails,       \
  *          otherwise ST_OK                            \
@@ -316,6 +321,6 @@ status_t arraylist_init(type)(arraylist(type)* list, size_t size) { \
  * 
  * @return Empty arraylist structure
  */
-#define arraylist_empty {0, 0, NULL}
+#define arraylist_init_empty {0, 0, NULL}
 
 #endif /* CTOOL_TYPE_ARRAYLIST_H */

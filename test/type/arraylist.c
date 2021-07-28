@@ -38,7 +38,7 @@ arraylist_define(sample_struct);
  */
 status_t test_arraylist_init() {
     /* create an empty char arraylist */
-    char_arraylist_t a = arraylist_empty;
+    char_arraylist_t a = arraylist_init_empty;
     assertr_equals(a.size, 0, ST_FAIL);
     assertr_equals(a._allocated_size, 0, ST_FAIL);
     
@@ -71,7 +71,7 @@ status_t test_arraylist_init() {
  */
 status_t test_arraylist_add() {
     /* create an empty char arraylist */
-    char_arraylist_t a = arraylist_empty;
+    char_arraylist_t a = arraylist_init_empty;
 
     /* add 'a' and 'b' elements */
     assertr_status(arraylist_add(char)(&a, 'a'), ST_FAIL);
@@ -119,7 +119,7 @@ status_t test_arraylist_add() {
 
 status_t test_arraylist_remove() {
     /* create an empty char arraylist */
-    char_arraylist_t a = arraylist_empty;
+    char_arraylist_t a = arraylist_init_empty;
 
     /* add 6 new elements */
     assertr_status(arraylist_add(char)(&a, 'a'), ST_FAIL);
@@ -191,7 +191,7 @@ status_t test_arraylist_remove() {
 
 status_t test_arraylist_trim() {
     /* create an empty char arraylist */
-    char_arraylist_t a = arraylist_empty;
+    char_arraylist_t a = arraylist_init_empty;
 
     /* add 3 new elements */
     assertr_status(arraylist_add(char)(&a, 'a'), ST_FAIL);
