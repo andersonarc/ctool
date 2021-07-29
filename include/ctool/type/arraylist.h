@@ -51,6 +51,18 @@
 #define arraylist_is_empty(list) (list.size == 0)
 
 /**
+ * Returns the description
+ * of an arraylist
+ * 
+ * @note use with arraylist_to_string_format
+ * 
+ * @param[in] type Type of the arraylist
+ * @param[in] list The arraylist
+ */
+#define arraylist_to_string(type, list) "arraylist " #list " of type " #type " with size %zu and allocated size %zu"
+#define arraylist_to_string_format(list) list.size, list._allocated_size
+
+/**
  * Declares an arraylist of specified type
  * 
  * @note The declaration should be placed in a header file
