@@ -59,7 +59,7 @@
  * @param[in] type Type of the arraylist
  * @param[in] list The arraylist
  */
-#define arraylist_to_string(type, list) "arraylist " #list " of type " #type " with size %zu and allocated size %zu"
+#define arraylist_to_string(type, list) "arraylist " #list " of type " macro_stringify(arraylist(type)) " with size %zu and allocated size %zu"
 #define arraylist_to_string_format(list) list.size, list._allocated_size
 
 /**
