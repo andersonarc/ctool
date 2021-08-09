@@ -248,6 +248,68 @@ status_t test_arraylist_trim() {
     return ST_OK;
 }
 
+status_t test_arraylist_revert() {
+    /* create an empty char arraylist */
+    char_arraylist_t a;
+    assertr_status(arraylist_init(char)(&a, 0), ST_FAIL);
+
+    /* add 3 new elements */
+    assertr_status(arraylist_add(char)(&a, 'a'), ST_FAIL);
+    assertr_status(char_arraylist_add(&a, 'b'), ST_FAIL);
+    assertr_status(char_arraylist_add(&a, 'c'), ST_FAIL);
+
+    /* check arraylist state */
+    assertr_equals(a._allocated_size, 4, ST_FAIL);
+    assertr_equals(a.size, 3, ST_FAIL);
+    assertr_equals(a.data[0], 'a', ST_FAIL);
+    assertr_equals(a.data[1], 'b', ST_FAIL);
+    assertr_equals(a.data[2], 'c', ST_FAIL);
+
+    /* revert the arraylist */
+    char_arraylist_revert(&a);
+
+    /* check arraylist state */
+    assertr_equals(a.data[0], 'c', ST_FAIL);
+    assertr_equals(a.data[1], 'b', ST_FAIL);
+    assertr_equals(a.data[2], 'a', ST_FAIL);
+
+
+    /* create a preallocated sample_struct arraylist */
+    sample_struct_arraylist_t b;
+    assertr_status(sample_struct_arraylist_init(&b, 5), ST_FAIL);
+
+    /* add 2 new elements */
+    sample_struct s1 = { 1, "string" };
+    sample_struct s2 = { 0, "a" };
+    assertr_status(arraylist_add(sample_struct)(&b, s1), ST_FAIL);
+    assertr_status(sample_struct_arraylist_add(&b, s2), ST_FAIL);
+
+    /* check arraylist state */
+    assertr_equals(b._allocated_size, 5, ST_FAIL);
+    assertr_equals(b.size, 2, ST_FAIL);
+    assertr_equals(b.data[0].a, 1, ST_FAIL);
+    assertr_zero(strcmp(b.data[0].b, "string"), ST_FAIL);
+    assertr_equals(b.data[1].a, 0, ST_FAIL);
+    assertr_zero(strcmp(b.data[1].b, "a"), ST_FAIL);
+
+    /* revert the arraylist */
+    arraylist_revert(sample_struct)(&b);
+
+     /* check arraylist state */
+    assertr_equals(b._allocated_size, 5, ST_FAIL);
+    assertr_equals(b.size, 2, ST_FAIL);
+    assertr_equals(b.data[0].a, 0, ST_FAIL);
+    assertr_zero(strcmp(b.data[0].b, "a"), ST_FAIL);
+    assertr_equals(b.data[1].a, 1, ST_FAIL);
+    assertr_zero(strcmp(b.data[1].b, "string"), ST_FAIL);
+
+    /* free the arraylists */
+    arraylist_free(char)(&a);
+    arraylist_free(sample_struct)(&b);
+
+    return ST_OK;
+}
+
     /* main function */
 int main() {
     if (test_arraylist_init() != ST_OK) {
@@ -260,6 +322,9 @@ int main() {
         return EXIT_FAILURE;
     }
     if (test_arraylist_trim() != ST_OK) {
+        return EXIT_FAILURE;
+    }
+    if (test_arraylist_revert() != ST_OK) {
         return EXIT_FAILURE;
     }
 

@@ -35,6 +35,7 @@
 #define arraylist_init(type) _ctool_generic_function(arraylist, type, init)
 #define arraylist_free(type) _ctool_generic_function(arraylist, type, free)
 #define arraylist_pop(type) _ctool_generic_function(arraylist, type, pop)
+#define arraylist_revert(type) _ctool_generic_function(arraylist, type, revert)
 
 /**
  * Returns the last element of an arraylist
@@ -147,7 +148,14 @@ static inline void arraylist_free(type)(arraylist(type)* list) {    \
  */                                                                 \
 static inline status_t arraylist_pop(type)(arraylist(type)* list) { \
     return arraylist_remove(type)(list, list->size - 1);            \
-}
+}                                                                   \
+                                                                    \
+/**                                                                 \
+ * Reverts the arraylist elements                                   \
+ *                                                                  \
+ * @param[in] list The arraylist                                    \
+ */                                                                 \
+void arraylist_revert(type)(arraylist(type)* list);
 
 
 
@@ -333,5 +341,19 @@ status_t arraylist_init(type)(arraylist(type)* list, size_t size) { \
     /* success */                                                   \
     return ST_OK;                                                   \
 }                                                                   \
+                                                                    \
+/**                                                                 \
+ * Reverts the arraylist elements                                   \
+ *                                                                  \
+ * @param[in] list The arraylist                                    \
+ */                                                                 \
+void arraylist_revert(type)(arraylist(type)* list) {                \
+    iterate_array(i, list->size / 2) {                              \
+        index_t inverted = list->size - i - 1;                      \
+        type tmp = list->data[i];                                   \
+        list->data[i] = list->data[inverted];                       \
+        list->data[inverted] = tmp;                                 \
+    }                                                               \
+}
 
 #endif /* CTOOL_TYPE_ARRAYLIST_H */
