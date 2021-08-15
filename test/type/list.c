@@ -52,9 +52,45 @@ status_t test_list_init() {
     return ST_OK;
 }
 
+/**
+ * Tests list resizing
+ * 
+ * @return ST_FAIL on error,
+ *          otherwise ST_OK
+ */
+status_t test_list_resize() {
+    char_list_t a;
+    assertr_status(list_init(char)(&a, 5), ST_FAIL);
+    a.data[0] = 1;
+    a.data[1] = -7;
+    assertr_equals(a.size, 5, ST_FAIL);
+    assertr_status(list_resize(char)(&a, 2), ST_FAIL);
+    assertr_equals(a.size, 2, ST_FAIL);
+    assertr_equals(a.data[0], 1, ST_FAIL);
+    assertr_equals(a.data[1], -7, ST_FAIL);
+    assertr_status(list_resize(char)(&a, 0), ST_FAIL);
+    assertr_equals(a.size, 0, ST_FAIL);
+    assertr_equals(a.data, NULL, ST_FAIL);
+
+    sample_struct_list_t b;
+    assertr_status(sample_struct_list_init(&b, 0), ST_FAIL);
+    assertr_equals(b.data, NULL, ST_FAIL);
+    assertr_status(sample_struct_list_resize(&b, 4), ST_FAIL);
+    assertr_not_null(b.data, ST_FAIL);
+    assertr_equals(b.size, 4, ST_FAIL);
+    
+    list_free(char)(&a);
+    sample_struct_list_free(&b);
+
+    return ST_OK;
+}
+
     /* main function */
 int main() {
     if (test_list_init() != ST_OK) {
+        return EXIT_FAILURE;
+    }
+    if (test_list_resize() != ST_OK) {
         return EXIT_FAILURE;
     }
 
