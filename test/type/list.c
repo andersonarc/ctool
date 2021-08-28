@@ -82,7 +82,7 @@ status_t test_list_resize() {
     list_free(char)(&a);
     sample_struct_list_free(&b);
 
-    return ST_OK;
+    return ST_OK;  
 }
 
     /* main function */

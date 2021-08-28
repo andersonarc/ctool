@@ -26,4 +26,18 @@
  */
 #define macro_stringify(x) _raw_macro_stringify(x)
 
+/**
+ * Concatenates two expressions
+ * 
+ * @param[in] a The first expression
+ * @param[in] b The second expression
+ */
+#define _raw_macro_concatenate(a, b) a##b
+
+/**
+ * Expands and concatenates
+ * two expressions
+ */
+#define macro_concatenate(a, b) _raw_macro_concatenate(a, b)
+
 #endif /* CTOOL_MACRO_H */
