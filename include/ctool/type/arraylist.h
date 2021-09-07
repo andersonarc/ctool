@@ -17,6 +17,7 @@
 #include <stdlib.h> /* memory allocation */
 #include "ctool/assert/runtime.h" /* runtime assertions */
 #include "ctool/type/_internal.h" /* internal definitions */
+#include "ctool/type/list.h" /* lists */
 #include "ctool/iteration.h" /* index_t */
 #include "ctool/macro.h" /* macro utils */
 
@@ -27,15 +28,16 @@
  * 
  * @param[in] type Type of the arraylist
  */
-#define arraylist(type) _ctool_generic_type(arraylist, type)
-#define arraylist_add(type) _ctool_generic_function(arraylist, type, add)
-#define arraylist_push arraylist_add
-#define arraylist_remove(type) _ctool_generic_function(arraylist, type, remove)
-#define arraylist_trim(type) _ctool_generic_function(arraylist, type, trim)
-#define arraylist_init(type) _ctool_generic_function(arraylist, type, init)
-#define arraylist_free(type) _ctool_generic_function(arraylist, type, free)
-#define arraylist_pop(type) _ctool_generic_function(arraylist, type, pop)
-#define arraylist_revert(type) _ctool_generic_function(arraylist, type, revert)
+#define arraylist(type)         _ctool_generic_type(arraylist, type)
+#define arraylist_add(type)     _ctool_generic_function(arraylist, type, add)
+#define arraylist_push          arraylist_add
+#define arraylist_remove(type)  _ctool_generic_function(arraylist, type, remove)
+#define arraylist_trim(type)    _ctool_generic_function(arraylist, type, trim)
+#define arraylist_init(type)    _ctool_generic_function(arraylist, type, init)
+#define arraylist_free(type)    _ctool_generic_function(arraylist, type, free)
+#define arraylist_pop(type)     _ctool_generic_function(arraylist, type, pop)
+#define arraylist_revert(type)  _ctool_generic_function(arraylist, type, revert)
+#define arraylist_to_list(type) _ctool_generic_function(arraylist, type, to_list)
 
 /**
  * Returns the last element of an arraylist
@@ -71,6 +73,9 @@
  * @param[in] type Type of the arraylist
 **/
 #define arraylist_declare(type)                   \
+                                                  \
+list_declare(type);                               \
+                                                  \
 typedef struct arraylist(type) {                  \
     size_t _allocated_size;                       \
     size_t size;                                  \
@@ -132,7 +137,7 @@ status_t arraylist_init(type)(arraylist(type)* list, size_t size);  \
  * Frees the memory allocated for                                   \
  * an arraylist                                                     \
  *                                                                  \
- * @param[in] list The arraylist                                    \                                       \
+ * @param[in] list The arraylist                                    \
  */                                                                 \
 static inline void arraylist_free(type)(arraylist(type)* list) {    \
     free(list->data);                                               \
@@ -155,7 +160,21 @@ static inline status_t arraylist_pop(type)(arraylist(type)* list) { \
  *                                                                  \
  * @param[in] list The arraylist                                    \
  */                                                                 \
-void arraylist_revert(type)(arraylist(type)* list);
+void arraylist_revert(type)(arraylist(type)* list);                 \
+                                                                    \
+                                                                    \
+/**                                                                 \
+ * Transform the arraylist to a list,                               \
+ * trimming it if required                                          \
+ *                                                                  \
+ * After transformation, using the source arraylist                 \
+ * is undefined behaviour, because list is assigned                 \
+ * with the same data pointer                                       \
+ *                                                                  \
+ * @param[in] src  The arraylist                                    \
+ * @param[in] dest The list to write into                           \
+ */                                                                 \
+status_t arraylist_to_list(type)(arraylist(type)* src, list(type)* dest);
 
 
 
@@ -164,13 +183,33 @@ void arraylist_revert(type)(arraylist(type)* list);
 
 
 /**
+ * Arraylist resizing methods definition
+ * 
+ * @param[in] size The size variable
+ * 
+ * Exact resizing increases arraylist size
+ * each time an element is added, 
+ * saving memory for small arraylists
+ * 
+ * Double resizing multiplies arraylist size
+ * by two each time an element is added,
+ * reducing allocation overhead for big arraylists
+ */
+#define ARRAYLIST_RESIZE_EXACT  exact
+#define ARRAYLIST_RESIZE_DOUBLE double
+#define _arraylist_resize_op_exact(size)  size + 1
+#define _arraylist_resize_op_double(size) size * 2
+
+/**
  * Defines an arraylist implementation of specified type
  * 
  * @note The definition should be placed in a source file
  * 
  * @param[in] type Type of the arraylist
+ * @param[in] resize_method Arraylist resizing method ("ARRAYLIST_RESIZE_EXACT" or "ARRAYLIST_RESIZE_DOUBLE")
 **/
-#define arraylist_define(type)                    \
+#define arraylist_define(type) arraylist_define_custom(type, ARRAYLIST_RESIZE_DOUBLE)
+#define arraylist_define_custom(type, resize_method) \
                                                   \
 /**                                               \
  * Appends a new element into an arraylist        \
@@ -187,6 +226,9 @@ status_t arraylist_add(type)(arraylist(type)* list, type element) { \
         /* new pointer */                         \
         type* pointer;                            \
                                                   \
+        /* new size */                            \
+        size_t old_size = list->_allocated_size;  \
+                                                  \
         /* check for empty list */                \
         if (list->_allocated_size == 0 || list->data == NULL) { \
             /* first allocation */                \
@@ -196,7 +238,7 @@ status_t arraylist_add(type)(arraylist(type)* list, type element) { \
             pointer = (type*) malloc(2 * sizeof(type)); \
         } else {                                  \
             /* increase allocated length */       \
-            list->_allocated_size *= 2;           \
+            list->_allocated_size = macro_concatenate(_arraylist_resize_op_, resize_method)(list->_allocated_size); \
                                                   \
             /* reallocate memory */               \
             pointer = (type*) realloc(list->data, list->_allocated_size * sizeof(type)); \
@@ -204,17 +246,12 @@ status_t arraylist_add(type)(arraylist(type)* list, type element) { \
                                                   \
         /* null check */                          \
         if (pointer == NULL) {                    \
-            /* revert allocated size */           \
-            list->_allocated_size /= 2;           \
-                                                  \
-            if (list->_allocated_size == 1) {     \
-                /* first allocation failed */     \
-                list->_allocated_size = 0;        \
-            }                                     \
-                                                  \
             /* log an error */                    \
-            loge("memory reallocation failed while adding new element to a " macro_stringify(arraylist(type)) \
-                " with size %zu and allocated size %zu", list->size, list->_allocated_size); \
+            loge("memory reallocation to size %zu failed while adding new element to a " macro_stringify(arraylist(type)) \
+                " with size %zu and allocated size %zu", list->_allocated_size, list->size, old_size); \
+                                                  \
+            /* revert allocated size */           \
+            list->_allocated_size = old_size;     \
                                                   \
             /* fail */                            \
             return ST_ALLOC_FAIL;                 \
@@ -312,7 +349,7 @@ status_t arraylist_trim(type)(arraylist(type)* list) { \
                                                           \
     /* change allocated size */                           \
     list->_allocated_size = list->size;                   \
-                                                       \
+                                                          \
     /* success */                                      \
     return ST_OK;                                      \
 }                                                      \
@@ -354,6 +391,27 @@ void arraylist_revert(type)(arraylist(type)* list) {                \
         list->data[i] = list->data[inverted];                       \
         list->data[inverted] = tmp;                                 \
     }                                                               \
+}                                                                   \
+                                                                    \
+/**                                                                 \
+ * Transform the arraylist to a list,                               \
+ * trimming it if required                                          \
+ *                                                                  \
+ * After transformation, using the source arraylist                 \
+ * is undefined behaviour, because list is assigned                 \
+ * with the same data pointer                                       \
+ *                                                                  \
+ * @param[in] src  The arraylist                                    \
+ * @param[in] dest The list to write into                           \
+ */                                                                 \
+status_t arraylist_to_list(type)(arraylist(type)* src, list(type)* dest) {  \
+    if (src->size != src->_allocated_size) {                                \
+        assertr_status(arraylist_trim(type)(src), ST_FAIL);                 \
+    }                                                                       \
+                                                                            \
+    dest->data = src->data;                                                 \
+    dest->size = src->size;                                                 \
+    return ST_OK;                                                           \
 }
 
 #endif /* CTOOL_TYPE_ARRAYLIST_H */

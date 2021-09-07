@@ -21,11 +21,13 @@ typedef struct sample_struct {
 arraylist_declare(char);
 arraylist_declare(uint32_t);
 arraylist_declare(sample_struct);
+arraylist_declare(int);
 
     /* generic definitions */
 arraylist_define(char);
 arraylist_define(uint32_t);
 arraylist_define(sample_struct);
+arraylist_define_custom(int, ARRAYLIST_RESIZE_EXACT);
 
     /* functions */
 /**
@@ -310,6 +312,111 @@ status_t test_arraylist_revert() {
     return ST_OK;
 }
 
+/**
+ * Tests if a new element could be
+ * added on top of an arraylist
+ * with an "exact" resizing configurations
+ * 
+ * @return ST_FAIL if an assertion failed,
+ *          otherwise ST_OK 
+ */
+status_t test_arraylist_add_exact() {
+    /* create an empty int arraylist */
+    int_arraylist_t a;
+    assertr_status(arraylist_init(int)(&a, 0), ST_FAIL);
+
+    /* add 2 elements */
+    assertr_status(arraylist_add(int)(&a, -1), ST_FAIL);
+    assertr_status(int_arraylist_add(&a, 777), ST_FAIL);
+
+    /* check arraylist state */
+    assertr_equals(a.size, 2, ST_FAIL);
+    assertr_equals(a._allocated_size, 2, ST_FAIL);
+    assertr_equals(a.data[0], -1, ST_FAIL);
+    assertr_equals(a.data[1], 777, ST_FAIL);
+
+    /* add a third element */
+    assertr_status(int_arraylist_add(&a, 1171), ST_FAIL);
+
+    /* check arraylist state */
+    assertr_equals(a.size, 3, ST_FAIL);
+    assertr_equals(a._allocated_size, 3, ST_FAIL);
+    assertr_equals(a.data[2], 1171, ST_FAIL);
+
+    /* free the arraylist */
+    int_arraylist_free(&a);
+
+    return ST_OK;
+}
+
+/**
+ * Tests if an arraylist
+ * can be transformed to a list
+ * 
+ * @return ST_FAIL if an assertion failed,
+ *          otherwise ST_OK 
+ */
+status_t test_arraylist_to_list() {
+    /* create an empty int arraylist */
+    int_arraylist_t a;
+    assertr_status(arraylist_init(int)(&a, 0), ST_FAIL);
+
+    /* add 3 elements */
+    assertr_status(arraylist_add(int)(&a, 11), ST_FAIL);
+    assertr_status(int_arraylist_add(&a, 33), ST_FAIL);
+    assertr_status(int_arraylist_add(&a, -710), ST_FAIL);
+
+    /* check arraylist state */
+    assertr_equals(a.size, 3, ST_FAIL);
+    assertr_equals(a._allocated_size, 3, ST_FAIL);
+    assertr_equals(a.data[0], 11, ST_FAIL);
+    assertr_equals(a.data[1], 33, ST_FAIL);
+    assertr_equals(a.data[2], -710, ST_FAIL);
+
+    /* transform */
+    int_list_t a_l;
+    assertr_status(arraylist_to_list(int)(&a, &a_l), ST_FAIL);
+
+    /* check list state */
+    assertr_equals(a_l.size, 3, ST_FAIL);
+    assertr_equals(a_l.data, a.data, ST_FAIL);
+    assertr_equals(a_l.data[0], 11, ST_FAIL);
+    assertr_equals(a_l.data[1], 33, ST_FAIL);
+    assertr_equals(a_l.data[2], -710, ST_FAIL);
+
+
+    /* create a preallocated sample_struct arraylist */
+    sample_struct_arraylist_t b;
+    assertr_status(sample_struct_arraylist_init(&b, 5), ST_FAIL);
+    sample_struct s1 = { 1, "string" };
+    sample_struct s2 = { 0, "a" };
+
+    /* add 2 new elements */
+    assertr_status(arraylist_add(sample_struct)(&b, s1), ST_FAIL);
+    assertr_status(sample_struct_arraylist_add(&b, s2), ST_FAIL);
+
+    /* check arraylist state */
+    assertr_equals(b._allocated_size, 5, ST_FAIL);
+    assertr_equals(b.size, 2, ST_FAIL);
+
+    /* transform */
+    list(sample_struct) b_l;
+    assertr_status(arraylist_to_list(sample_struct)(&b, &b_l), ST_FAIL);
+
+    /* check list state */
+    assertr_equals(b_l.size, 2, ST_FAIL);
+    assertr_equals(b_l.data[0].a, 1, ST_FAIL);
+    assertr_zero(strcmp(b_l.data[0].b, "string"), ST_FAIL);
+    assertr_equals(b_l.data[1].a, 0, ST_FAIL);
+    assertr_zero(strcmp(b_l.data[1].b, "a"), ST_FAIL);
+
+    /* free the arraylists */
+    int_arraylist_free(&a);
+    arraylist_free(sample_struct)(&b);
+
+    return ST_OK;
+}
+
     /* main function */
 int main() {
     if (test_arraylist_init() != ST_OK) {
@@ -325,6 +432,12 @@ int main() {
         return EXIT_FAILURE;
     }
     if (test_arraylist_revert() != ST_OK) {
+        return EXIT_FAILURE;
+    }
+    if (test_arraylist_add_exact() != ST_OK) {
+        return EXIT_FAILURE;
+    }
+    if (test_arraylist_to_list() != ST_OK) {
         return EXIT_FAILURE;
     }
 
