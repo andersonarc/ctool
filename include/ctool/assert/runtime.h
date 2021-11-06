@@ -19,6 +19,8 @@
 
     /* includes */
 #include <errno.h> /* errno */
+#include <stdbool.h> /* boolean */
+
 #include "ctool/assert/_internal.h" /* implementation */
 #include "ctool/status.h" /* return status */
 
@@ -108,5 +110,15 @@
  */
 #define assertr_malloc(variable, size, type) _ctool_assert_r_impl(_ctool_assert_malloc(variable), _ctool_assert_malloc_cond(variable, size, type), ST_ALLOC_FAIL)
 #define assertrc_malloc(variable, size, type, message, ...) _ctool_assert_r_impl(message, _ctool_assert_malloc_cond(variable, size, type), ST_ALLOC_FAIL, ##__VA_ARGS__)
+
+/**
+ * Special assertion that always fails,
+ * prints the optional message and
+ * returns the specified status
+ * 
+ * @param[in] status   Status to return on error
+ */
+#define assertr_fail(status) _ctool_assert_r_impl("assertion failed", false, status)
+#define assertrc_fail(status, message, ...) _ctool_assert_r_impl(message, false, status, ##__VA_ARGS__)
 
 #endif /* CTOOL_ASSERT_RUNTIME_H */

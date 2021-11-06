@@ -39,7 +39,7 @@ status_t create_file(const char* text, FILE** result) {
  * @param[in] lines The number of lines
  * @param[in] max   Max length of a line
  * 
- * @return ST_FAIL if an assertion failed,
+ * @return ST_FAIL if an assertion fails,
  *          otherwise ST_OK 
  */ 
 status_t test_file_line_info(char** text, size_t lines, size_t max) {
@@ -88,7 +88,7 @@ status_t test_file_line_info(char** text, size_t lines, size_t max) {
  * Tests if file size information
  * is computed correctly
  * 
- * @return ST_FAIL if an assertion failed,
+ * @return ST_FAIL if an assertion fails,
  *          otherwise ST_OK 
  */
 status_t test_file_size() {
@@ -127,7 +127,7 @@ status_t test_file_size() {
  * is computed correctly if each
  * line of the file ends with a '\n'
  * 
- * @return ST_FAIL if an assertion failed,
+ * @return ST_FAIL if an assertion fails,
  *          otherwise ST_OK 
  */
 status_t test_file_line_info_1() {
@@ -143,7 +143,7 @@ status_t test_file_line_info_1() {
  * line of the file ends with a '\n',
  * except for the last
  * 
- * @return ST_FAIL if an assertion failed,
+ * @return ST_FAIL if an assertion fails,
  *          otherwise ST_OK 
  */
 status_t test_file_line_info_2() {
@@ -161,7 +161,7 @@ status_t test_file_line_info_2() {
  * except for the last, which ends
  * with '\n\n'
  * 
- * @return ST_FAIL if an assertion failed,
+ * @return ST_FAIL if an assertion fails,
  *          otherwise ST_OK 
  */
 status_t test_file_line_info_3() {
@@ -178,7 +178,7 @@ status_t test_file_line_info_3() {
  * except for one, which ends
  * with '\n\n'
  * 
- * @return ST_FAIL if an assertion failed,
+ * @return ST_FAIL if an assertion fails,
  *          otherwise ST_OK 
  */
 status_t test_file_line_info_4() {

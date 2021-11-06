@@ -35,7 +35,7 @@ arraylist_define_custom(int, ARRAYLIST_RESIZE_EXACT);
  * be initialized correctly using
  * different methods
  * 
- * @return ST_FAIL if an assertion failed,
+ * @return ST_FAIL if an assertion fails,
  *          otherwise ST_OK
  */
 status_t test_arraylist_init() {
@@ -69,7 +69,7 @@ status_t test_arraylist_init() {
  * Tests if a new element could be
  * added on top of an arraylist
  * 
- * @return ST_FAIL if an assertion failed,
+ * @return ST_FAIL if an assertion fails,
  *          otherwise ST_OK 
  */
 status_t test_arraylist_add() {
@@ -317,7 +317,7 @@ status_t test_arraylist_revert() {
  * added on top of an arraylist
  * with an "exact" resizing configurations
  * 
- * @return ST_FAIL if an assertion failed,
+ * @return ST_FAIL if an assertion fails,
  *          otherwise ST_OK 
  */
 status_t test_arraylist_add_exact() {
@@ -353,7 +353,7 @@ status_t test_arraylist_add_exact() {
  * Tests if an arraylist
  * can be transformed to a list
  * 
- * @return ST_FAIL if an assertion failed,
+ * @return ST_FAIL if an assertion fails,
  *          otherwise ST_OK 
  */
 status_t test_arraylist_to_list() {

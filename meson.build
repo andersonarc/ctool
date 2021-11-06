@@ -63,3 +63,8 @@ file_test = executable('test_file',
     files('test/file.c'),
     dependencies: libctool_dep)
 test('file_test', file_test)
+
+bitset_test = executable('bitset_test',
+    files('test/type/bitset.c'),
+    dependencies: libctool_dep)
+test('bitset_test', bitset_test)

@@ -17,7 +17,7 @@
  * the end (exclusive) and, if used with non-single step,
  * does not go out of bounds
  * 
- * @return ST_FAIL if an assertion failed,
+ * @return ST_FAIL if an assertion fails,
  *          otherwise ST_OK 
  */
 status_t test_iterate_range() {

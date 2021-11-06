@@ -87,8 +87,12 @@ status_t test_assert_not_equals() {
     int c = 0;
     assertr_not_equals(a, b, ST_FAIL);
     assertd_not_equals(b, c);
-    assertrc_not_equals(a, c, ST_OK, "%d: assert_zero test passed", 6);
+    assertrc_not_equals(a, c, ST_OK, "%d: assert_not_equals test passed", 7);
     return ST_OK;
+}
+
+status_t test_assert_fail() {
+    assertrc_fail(ST_OK, "8: assert_fail test passed");
 }
 
 int main() {
