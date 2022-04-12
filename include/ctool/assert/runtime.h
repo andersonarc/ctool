@@ -71,6 +71,17 @@
 #define assertr_status(expression, status) assertr_equals(expression, ST_OK, status)
 #define assertrc_status(expression, status, message, ...) assertrc_equals(expression, ST_OK, status, message, ##__VA_ARGS__)
 
+//todo - make the error status default to ST_FAIL
+/**
+ * Asserts that an expression returns not ST_OK
+ * 
+ * @param[in] expression The expression
+ * @param[in] status     Status to return on error
+ */
+#define assertr_bad_status(expression, status) assertr_not_equals(expression, ST_OK, status)
+#define assertrc_bad_status(expression, status, message, ...) assertrc_not_equals(expression, ST_OK, status, message, ##__VA_ARGS__)
+
+
 /**
  * Asserts that a condition is true
  * 

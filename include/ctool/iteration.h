@@ -6,6 +6,8 @@
  * 
  *  Macro for iteration over ranges and arrays,
  *  and index type definition
+ * 
+ * todo - make range iterators more useful and less structured
  */
     /* header guard */
 #ifndef CTOOL_ITERATION_H

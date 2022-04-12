@@ -13,7 +13,7 @@
 #include "ctool/log.h"     /* logging */
 
     /* constant presets */
-#define CTOOL_TASK_THREADS 10000
+#define CTOOL_TASK_THREADS 5000
 #define CTOOL_TASK_INSTANCES 5
 #define CTOOL_EXECUTIONS_PER_TASK 100000
 #define CTOOL_TASK_COUNT (CTOOL_EXECUTIONS_PER_TASK * CTOOL_TASK_INSTANCES)

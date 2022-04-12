@@ -187,9 +187,23 @@ status_t test_arraylist_remove() {
     assertr_equals(b.data[0].a, s1.a, ST_FAIL);
     assertr_zero(strcmp(b.data[0].b, s1.b), ST_FAIL);
 
+
+    /* create an empty arraylist */
+    int_arraylist_t c;
+    assertr_status(arraylist_init_empty(int)(&c), ST_FAIL);
+    
+    /* try to remove an element */
+    logi("expecting three identical index errors");
+    assertr_bad_status(arraylist_remove(int)(&c, 3), ST_FAIL);
+    assertr_bad_status(arraylist_remove(int)(&c, -1), ST_FAIL);
+    assertr_bad_status(arraylist_pop(int)(&c), ST_FAIL);
+    logi("end of expected error list");
+
+
     /* free the arraylists */
     arraylist_free(char)(&a);
     sample_struct_arraylist_free(&b);
+    int_arraylist_free(&c);
 
     return ST_OK;
 }
@@ -417,6 +431,49 @@ status_t test_arraylist_to_list() {
     return ST_OK;
 }
 
+/**
+ * Tests if the arraylist type could
+ * be initialized correctly with
+ * one initial elements
+ * 
+ * @return ST_FAIL if an assertion fails,
+ *          otherwise ST_OK
+ */
+status_t test_arraylist_init_with() {
+    /* create an empty char arraylist */
+    char_arraylist_t a;
+    assertr_status(arraylist_init_with(char)(&a, 'A'), ST_FAIL);
+    assertr_equals(a.size, 1, ST_FAIL);
+    assertr_equals(a._allocated_size, 2, ST_FAIL);
+    assertr_equals(a.data[0], 'A', ST_FAIL);
+    
+    /* create an int arraylist */
+    int_arraylist_t b;
+    assertr_status(arraylist_init_with(int)(&b, 3), ST_FAIL);
+    assertr_equals(b.size, 1, ST_FAIL);
+    assertr_equals(b._allocated_size, 1, ST_FAIL);
+    assertr_equals(b.data[0], 3, ST_FAIL);
+
+    /* create a sample_struct arraylist */
+    sample_struct_arraylist_t c;
+    sample_struct sample;
+    sample.a = 17;
+    sample.b = "adasd";
+    assertr_status(arraylist_init_with(sample_struct)(&c, sample), ST_FAIL);
+    assertr_equals(c.size, 1, ST_FAIL);
+    assertr_equals(c._allocated_size, 2, ST_FAIL);
+    assertr_equals(c.data[0].a, 17, ST_FAIL);
+    assertr_zero(strcmp(c.data[0].b, "adasd"), ST_FAIL);
+
+    /* free the arraylists */
+    char_arraylist_free(&a);
+    arraylist_free(int)(&b);
+    sample_struct_arraylist_free(&c);
+
+    return ST_OK;
+}
+
+
     /* main function */
 int main() {
     if (test_arraylist_init() != ST_OK) {
@@ -438,6 +495,9 @@ int main() {
         return EXIT_FAILURE;
     }
     if (test_arraylist_to_list() != ST_OK) {
+        return EXIT_FAILURE;
+    }
+    if (test_arraylist_init_with() != ST_OK) {
         return EXIT_FAILURE;
     }
 

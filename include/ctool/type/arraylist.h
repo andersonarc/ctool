@@ -15,7 +15,7 @@
 
     /* includes */
 #include <stdlib.h> /* memory allocation */
-#include "ctool/assert/runtime.h" /* runtime assertions */
+#include "ctool/assert/runtime.h" /* assertions */
 #include "ctool/type/_internal.h" /* internal definitions */
 #include "ctool/type/list.h" /* lists */
 #include "ctool/iteration.h" /* index_t */
@@ -28,16 +28,18 @@
  * 
  * @param[in] type Type of the arraylist
  */
-#define arraylist(type)         _ctool_generic_type(arraylist, type)
-#define arraylist_add(type)     _ctool_generic_function(arraylist, type, add)
-#define arraylist_push          arraylist_add
-#define arraylist_remove(type)  _ctool_generic_function(arraylist, type, remove)
-#define arraylist_trim(type)    _ctool_generic_function(arraylist, type, trim)
-#define arraylist_init(type)    _ctool_generic_function(arraylist, type, init)
-#define arraylist_free(type)    _ctool_generic_function(arraylist, type, free)
-#define arraylist_pop(type)     _ctool_generic_function(arraylist, type, pop)
-#define arraylist_revert(type)  _ctool_generic_function(arraylist, type, revert)
-#define arraylist_to_list(type) _ctool_generic_function(arraylist, type, to_list)
+#define arraylist(type)            _ctool_generic_type(arraylist, type)
+#define arraylist_add(type)        _ctool_generic_function(arraylist, type, add)
+#define arraylist_push             arraylist_add
+#define arraylist_remove(type)     _ctool_generic_function(arraylist, type, remove)
+#define arraylist_trim(type)       _ctool_generic_function(arraylist, type, trim)
+#define arraylist_init(type)       _ctool_generic_function(arraylist, type, init)
+#define arraylist_free(type)       _ctool_generic_function(arraylist, type, free)
+#define arraylist_pop(type)        _ctool_generic_function(arraylist, type, pop)
+#define arraylist_revert(type)     _ctool_generic_function(arraylist, type, revert)
+#define arraylist_to_list(type)    _ctool_generic_function(arraylist, type, to_list)
+#define arraylist_init_with(type)  _ctool_generic_function(arraylist, type, init_with)
+#define arraylist_init_empty(type) _ctool_generic_function(arraylist, type, init_empty)
 
 /**
  * Returns the last element of an arraylist
@@ -54,15 +56,15 @@
 #define arraylist_is_empty(list) (list.size == 0)
 
 /**
- * Returns the description
- * of an arraylist
+ * Returns the string representation of an arraylist
+ * without its contents
  * 
  * @note use with arraylist_to_string_format
  * 
  * @param[in] type Type of the arraylist
  * @param[in] list The arraylist
  */
-#define arraylist_to_string(type, list) "arraylist " #list " of type " macro_stringify(arraylist(type)) " with size %zu and allocated size %zu"
+#define arraylist_to_string(type, list) "arraylist<" macro_stringify(arraylist(type)) "> " #list " [%zu bytes used out of %zu]"
 #define arraylist_to_string_format(list) list.size, list._allocated_size
 
 /**
@@ -162,7 +164,6 @@ static inline status_t arraylist_pop(type)(arraylist(type)* list) { \
  */                                                                 \
 void arraylist_revert(type)(arraylist(type)* list);                 \
                                                                     \
-                                                                    \
 /**                                                                 \
  * Transform the arraylist to a list,                               \
  * trimming it if required                                          \
@@ -173,12 +174,44 @@ void arraylist_revert(type)(arraylist(type)* list);                 \
  *                                                                  \
  * @param[in] src  The arraylist                                    \
  * @param[in] dest The list to write into                           \
+ *                                                                  \
+ * @return ST_FAIL if the arraylist can't be trimmed,               \
+ *          otherwise ST_OK                                         \
  */                                                                 \
-status_t arraylist_to_list(type)(arraylist(type)* src, list(type)* dest);
+status_t arraylist_to_list(type)(arraylist(type)* src, list(type)* dest); \
+                                                                    \
+/**                                                                 \
+ * Initializes an arraylist with one element                        \
+ *                                                                  \
+ * @param[in] list The arraylist                                    \
+ * @param[in] element The element                                   \
+ *                                                                  \
+ * @return ST_FAIL if the arraylist can't be initialized,           \
+ *          otherwise ST_OK                                         \
+ */                                                                 \
+static inline status_t arraylist_init_with(type)(arraylist(type)* list, type element) { \
+    assertr_status(arraylist_init(type)(list, 0), ST_FAIL);                             \
+    assertr_status(arraylist_add(type)(list, element), ST_FAIL);                        \
+    return ST_OK;                                                                       \
+}                                                                                       \
+                                                                                        \
+/**                                                                                     \
+ * Initializes an empty arraylist                                                       \
+ *                                                                                      \
+ * @param[in] list The arraylist                                                        \
+ *                                                                                      \
+ * @return ST_FAIL if the arraylist cannot be initialized,                              \
+ *          otherwise ST_OK                                                             \
+ */                                                                                     \
+static inline status_t arraylist_init_empty(type)(arraylist(type)* list) {              \
+    assertr_status(arraylist_init(type)(list, 0), ST_FAIL);                             \
+    return ST_OK;                                                                       \
+}
 
 
 
-
+//--todo: Make arraylist_init size default to 2
+//--todo: Make arl_assign_add function
 
 
 
@@ -197,6 +230,8 @@ status_t arraylist_to_list(type)(arraylist(type)* src, list(type)* dest);
  */
 #define ARRAYLIST_RESIZE_EXACT  exact
 #define ARRAYLIST_RESIZE_DOUBLE double
+#define _ARRAYLIST_INITIAL_SIZE_exact  1
+#define _ARRAYLIST_INITIAL_SIZE_double 2
 #define _arraylist_resize_op_exact(size)  size + 1
 #define _arraylist_resize_op_double(size) size * 2
 
@@ -232,10 +267,10 @@ status_t arraylist_add(type)(arraylist(type)* list, type element) { \
         /* check for empty list */                \
         if (list->_allocated_size == 0 || list->data == NULL) { \
             /* first allocation */                \
-            list->_allocated_size = 2;            \
+            list->_allocated_size = macro_concatenate(_ARRAYLIST_INITIAL_SIZE_, resize_method); \
                                                   \
             /* allocate memory */                 \
-            pointer = (type*) malloc(2 * sizeof(type)); \
+            pointer = (type*) malloc(list->_allocated_size * sizeof(type)); \
         } else {                                  \
             /* increase allocated length */       \
             list->_allocated_size = macro_concatenate(_arraylist_resize_op_, resize_method)(list->_allocated_size); \
@@ -403,6 +438,9 @@ void arraylist_revert(type)(arraylist(type)* list) {                \
  *                                                                  \
  * @param[in] src  The arraylist                                    \
  * @param[in] dest The list to write into                           \
+ *                                                                  \
+ * @return ST_FAIL if the arraylist can't be trimmed,               \
+ *          otherwise ST_OK                                         \
  */                                                                 \
 status_t arraylist_to_list(type)(arraylist(type)* src, list(type)* dest) {  \
     if (src->size != src->_allocated_size) {                                \
