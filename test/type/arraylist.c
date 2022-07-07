@@ -1,505 +1,499 @@
 /**
  * @file arraylist.c
  * @author andersonarc (e.andersonarc@gmail.com)
- * @version 0.2
- * @date 2021-07-04
- * 
- *  Tests for the generic resizable arraylist type
+ * @version 0.1
+ * @date 2022-04-14
  */
+
     /* includes */
 #include <stdint.h> /* int types */
 #include <string.h> /* string operations */
 #include "ctool/type/arraylist.h" /* arraylist type */
 
+#include "criterion/criterion.h" /* test framework */
+#include "criterion/new/assert.h" 
+
     /* typedefs */
-typedef struct sample_struct {
+typedef struct sample_type {
     uint16_t a;
     char* b;
-} sample_struct;
+} sample_type;
 
     /* generic declarations */
 arraylist_declare(char);
-arraylist_declare(uint32_t);
-arraylist_declare(sample_struct);
-arraylist_declare(int);
+arraylist_declare(sample_type);
+arraylist_declare(uint64_t);
 
     /* generic definitions */
 arraylist_define(char);
-arraylist_define(uint32_t);
-arraylist_define(sample_struct);
-arraylist_define_custom(int, ARRAYLIST_RESIZE_EXACT);
+arraylist_define(sample_type);
+arraylist_define_custom(uint64_t, ARRAYLIST_RESIZE_EXACT);
 
-    /* functions */
-/**
- * Tests if the arraylist type could
- * be initialized correctly using
- * different methods
- * 
- * @return ST_FAIL if an assertion fails,
- *          otherwise ST_OK
- */
-status_t test_arraylist_init() {
-    /* create an empty char arraylist */
-    char_arraylist_t a;
-    assertr_status(arraylist_init(char)(&a, 0), ST_FAIL);
-    assertr_equals(a.size, 0, ST_FAIL);
-    assertr_equals(a._allocated_size, 0, ST_FAIL);
+
+    /* utility definitions */
+#define create_arraylists()     \
+    char_arraylist_t a;         \
+    arraylist(sample_type) b;   \
+    arraylist(uint64_t) c;
+
+#define free_arraylists()               \
+    arraylist_free(char)(&a);           \
+    arraylist_free(sample_type)(&b);    \
+    arraylist_free(uint64_t)(&c);
+
+#define check_arraylist_state(name, expected_size, expected_allocated_size) \
+    cr_assert(eq(sz, name.size, expected_size));                            \
+    cr_assert(eq(sz, name._allocated_size, expected_allocated_size));
+
+#define ncr_assert_status(block) cr_assert(ne(int, block, ST_FAIL));
+
+#define ncr_assert_bad_status(block) cr_assert(ne(int, block, ST_OK));
+
+    /* tests */
+Test(arraylist, init) {
+    create_arraylists();
+
+    /* a random data filler is created to check for modifications */
+    void* stub = (void*) (intptr_t) rand();
+
+    /* test initializing an empty arraylist */
+    ncr_assert_status(arraylist_init_empty(char)(&a));
+    check_arraylist_state(a, 0, 0);
+    cr_assert(eq(ptr, a.data, NULL));
+
+    /* test initializing a structure arraylist */
+    b.data = stub;
+    ncr_assert_status(arraylist_init(sample_type)(&b, 4));
+    check_arraylist_state(b, 0, 4);
+    cr_assert(ne(ptr, b.data, stub));
+
+    /* test initializing an integer arraylist */
+    c.data = stub;
+    ncr_assert_status(arraylist_init(uint64_t)(&c, 777));
+    check_arraylist_state(c, 0, 777);
+    cr_assert(ne(ptr, c.data, stub));
+
+    free_arraylists();
+}
+
+Test(arraylist, init_default) {
+    create_arraylists();
+
+    /* a random data filler is created to check for modifications */
+    void* stub = (void*) (intptr_t) rand();
+
+    /* test initializing a character arraylist */
+    a.data = stub;
+    ncr_assert_status(arraylist_init_default(char)(&a));
+    check_arraylist_state(a, 0, ARRAYLIST_DEFAULT_SIZE);
+    cr_assert(ne(ptr, a.data, stub));
+
+    /* test initializing a structure arraylist */
+    b.data = stub;
+    ncr_assert_status(arraylist_init_default(sample_type)(&b));
+    check_arraylist_state(b, 0, ARRAYLIST_DEFAULT_SIZE);
+    cr_assert(ne(ptr, b.data, stub));
+
+    /* test initializing an integer arraylist */
+    c.data = stub;
+    ncr_assert_status(arraylist_init_default(uint64_t)(&c));
+    check_arraylist_state(c, 0, ARRAYLIST_DEFAULT_SIZE);
+    cr_assert(ne(ptr, c.data, stub));
+
+    free_arraylists();
+}
+
+Test(arraylist, init_with) {
+    create_arraylists();
+
+    /* test initializing a character arraylist */
+    ncr_assert_status(arraylist_init_with(char)(&a, 'X'));
+    check_arraylist_state(a, 1, _ARRAYLIST_INITIAL_SIZE_double);
+    cr_assert(eq(chr, a.data[0], 'X'));
+
+    /* test initializing a structure arraylist */
+    sample_type s1 = { .a = 17, .b = "stri" };
+    ncr_assert_status(arraylist_init_with(sample_type)(&b, s1));
+    check_arraylist_state(b, 1, _ARRAYLIST_INITIAL_SIZE_double);
+    cr_assert(eq(u16, b.data[0].a, 17));
+    cr_assert(eq(str, b.data[0].b, "stri"));
+
+    /* test initializing an integer arraylist */
+    ncr_assert_status(arraylist_init_with(uint64_t)(&c, 632363));
+    check_arraylist_state(c, 1, _ARRAYLIST_INITIAL_SIZE_exact);
+    cr_assert(eq(u64, c.data[0], 632363));
+
+    free_arraylists();
+}
+
+Test(arraylist, add) {
+    create_arraylists();
+
+    /* create an address buffer to check for reallocations */
+    void* tmp;
+
+    /* test adding several elements to an empty char arraylist */
+    ncr_assert_status(arraylist_init(char)(&a, 0));
+        check_arraylist_state(a, 0, 0);
+
+    ncr_assert_status(arraylist_add(char)(&a, 'x'));
+        check_arraylist_state(a, 1, 2);
+        cr_assert(eq(chr, a.data[0], 'x'));
+
+    ncr_assert_status(arraylist_add(char)(&a, 'c'));
+        check_arraylist_state(a, 2, 2);
+        cr_assert(eq(chr, a.data[0], 'x'));
+        cr_assert(eq(chr, a.data[1], 'c'));
+        tmp = a.data;
+
+    ncr_assert_status(arraylist_add(char)(&a, 'b'));
+        check_arraylist_state(a, 3, 4);
+        cr_assert(eq(chr, a.data[0], 'x'));
+        cr_assert(eq(chr, a.data[1], 'c'));
+        cr_assert(eq(chr, a.data[2], 'b'));
+
+
+    /* test adding to a preallocated structure arraylist */
+    ncr_assert_status(arraylist_init(sample_type)(&b, 7));
+        check_arraylist_state(b, 0, 7);
+        tmp = b.data;
     
-    /* create a preallocated uint32_t arraylist */
-    uint32_t_arraylist_t b;
-    assertr_status(arraylist_init(uint32_t)(&b, 0), ST_FAIL);
-    assertr_equals(b.size, 0, ST_FAIL);
-    assertr_equals(b._allocated_size, 0, ST_FAIL);
+    sample_type s1 = { .a = 17, .b = "stri" };
+    ncr_assert_status(arraylist_add(sample_type)(&b, s1));
+        cr_assert(eq(ptr, b.data, tmp));
 
-    /* create a preallocated sample_struct arraylist */
-    sample_struct_arraylist_t c;
-    assertr_status(sample_struct_arraylist_init(&c, 5), ST_FAIL);
-    assertr_equals(c.size, 0, ST_FAIL);
-    assertr_equals(c._allocated_size, 5, ST_FAIL);
+    ncr_assert_status(arraylist_add(sample_type)(&b, s1));
+        cr_assert(eq(ptr, b.data, tmp));
 
-    /* free the arraylists */
-    char_arraylist_free(&a);
-    arraylist_free(uint32_t)(&b);
-    sample_struct_arraylist_free(&c);
+    ncr_assert_status(arraylist_add(sample_type)(&b, s1));
+        cr_assert(eq(ptr, b.data, tmp));
+        cr_assert(eq(u16, b.data[2].a, 17));
+        cr_assert(eq(str, b.data[2].b, "stri"));
 
-    return ST_OK;
+
+    /* test initializing an integer arraylist with exact resize configuration */
+    ncr_assert_status(arraylist_init(uint64_t)(&c, 1));
+        check_arraylist_state(c, 0, 1);
+        tmp = c.data;
+
+    ncr_assert_status(arraylist_add(uint64_t)(&c, 13637223));
+        cr_assert(eq(ptr, c.data, tmp));
+        check_arraylist_state(c, 1, 1);
+        cr_assert(eq(u64, c.data[0], 13637223));
+
+    ncr_assert_status(arraylist_add(uint64_t)(&c, 3473472));
+        check_arraylist_state(c, 2, 2);
+        cr_assert(eq(u64, c.data[0], 13637223));
+        cr_assert(eq(u64, c.data[1], 3473472));
+
+    ncr_assert_status(arraylist_add(uint64_t)(&c, 5823534));
+        check_arraylist_state(c, 3, 3);
+        cr_assert(eq(u64, c.data[0], 13637223));
+        cr_assert(eq(u64, c.data[1], 3473472));
+        cr_assert(eq(u64, c.data[2], 5823534));
+
+    free_arraylists();
 }
 
-/**
- * Tests if a new element could be
- * added on top of an arraylist
- * 
- * @return ST_FAIL if an assertion fails,
- *          otherwise ST_OK 
- */
-status_t test_arraylist_add() {
-    /* create an empty char arraylist */
-    char_arraylist_t a;
-    assertr_status(arraylist_init(char)(&a, 0), ST_FAIL);
+Test(arraylist, remove) {
+    create_arraylists();
 
-    /* add 'a' and 'b' elements */
-    assertr_status(arraylist_add(char)(&a, 'a'), ST_FAIL);
-    assertr_status(char_arraylist_add(&a, 'b'), ST_FAIL);
+    /* test removing several elements from different points in a char arraylist */
+    ncr_assert_status(arraylist_init(char)(&a, 9));
+    ncr_assert_status(arraylist_add(char)(&a, 'a'));
+    ncr_assert_status(arraylist_add(char)(&a, 'b'));
+    ncr_assert_status(arraylist_add(char)(&a, 'c'));
+    ncr_assert_status(arraylist_add(char)(&a, 'd'));
+    ncr_assert_status(arraylist_add(char)(&a, 'e'));
+    ncr_assert_status(arraylist_add(char)(&a, 'f'));
+        check_arraylist_state(a, 6, 9);
 
-    /* check arraylist state */
-    assertr_equals(a.size, 2, ST_FAIL);
-    assertr_equals(a._allocated_size, 2, ST_FAIL);
-    assertr_equals(a.data[0], 'a', ST_FAIL);
-    assertr_equals(a.data[1], 'b', ST_FAIL);
-
-    /* add a 'c' element */
-    assertr_status(char_arraylist_add(&a, 'c'), ST_FAIL);
-
-    /* check arraylist state */
-    assertr_equals(a.size, 3, ST_FAIL);
-    assertr_equals(a._allocated_size, 4, ST_FAIL);
-    assertr_equals(a.data[2], 'c', ST_FAIL);
-
-
-    /* create a preallocated sample_struct arraylist */
-    sample_struct_arraylist_t b;
-    assertr_status(sample_struct_arraylist_init(&b, 5), ST_FAIL);
-    sample_struct s1 = { 1, "string" };
-    sample_struct s2 = { 0, "a" };
-
-    /* add two new elements */
-    assertr_status(arraylist_add(sample_struct)(&b, s1), ST_FAIL);
-    assertr_status(sample_struct_arraylist_add(&b, s2), ST_FAIL);
-
-    /* check arraylist state */
-    assertr_equals(b.size, 2, ST_FAIL);
-    assertr_equals(b._allocated_size, 5, ST_FAIL);
-    assertr_equals(b.data[0].a, s1.a, ST_FAIL);
-    assertr_equals(b.data[1].a, s2.a, ST_FAIL);
-    assertr_zero(strcmp(b.data[0].b, s1.b), ST_FAIL);
-    assertr_zero(strcmp(b.data[1].b, s2.b), ST_FAIL);
-
-    /* free the arraylists */
-    char_arraylist_free(&a);
-    arraylist_free(sample_struct)(&b);
-
-    return ST_OK;
-}
-
-status_t test_arraylist_remove() {
-    /* create an empty char arraylist */
-    char_arraylist_t a;
-    assertr_status(arraylist_init(char)(&a, 0), ST_FAIL);
-
-    /* add 6 new elements */
-    assertr_status(arraylist_add(char)(&a, 'a'), ST_FAIL);
-    assertr_status(char_arraylist_add(&a, 'b'), ST_FAIL);
-    assertr_status(char_arraylist_add(&a, 'c'), ST_FAIL);
-    assertr_status(char_arraylist_add(&a, 'd'), ST_FAIL);
-    assertr_status(char_arraylist_add(&a, 'e'), ST_FAIL);
-    assertr_status(char_arraylist_add(&a, 'f'), ST_FAIL);
-
-    /* remove the first element */
-    assertr_status(arraylist_remove(char)(&a, 0), ST_FAIL);
+    ncr_assert_status(arraylist_remove(char)(&a, 3));
+        check_arraylist_state(a, 5, 9);
+        cr_assert(eq(chr, a.data[0], 'a'));
+        cr_assert(eq(chr, a.data[1], 'b'));
+        cr_assert(eq(chr, a.data[2], 'c'));
+        cr_assert(eq(chr, a.data[3], 'e'));
+        cr_assert(eq(chr, a.data[4], 'f'));
     
-    /* check arraylist state */
-    assertr_equals(a._allocated_size, 8, ST_FAIL);
-    assertr_equals(a.size, 5, ST_FAIL);
-    assertr_equals(a.data[0], 'b', ST_FAIL);
-    assertr_equals(a.data[1], 'c', ST_FAIL);
-    assertr_equals(a.data[2], 'd', ST_FAIL);
-    assertr_equals(a.data[3], 'e', ST_FAIL);
-    assertr_equals(a.data[4], 'f', ST_FAIL);
-
-    /* remove the last element */
-    assertr_status(arraylist_remove(char)(&a, 4), ST_FAIL);
-
-    /* check arraylist state */
-    assertr_equals(a._allocated_size, 4, ST_FAIL);
-    assertr_equals(a.size, 4, ST_FAIL);
-    assertr_equals(a.data[0], 'b', ST_FAIL);
-    assertr_equals(a.data[1], 'c', ST_FAIL);
-    assertr_equals(a.data[2], 'd', ST_FAIL);
-    assertr_equals(a.data[3], 'e', ST_FAIL);
-
-    /* remove the second element */
-    assertr_status(char_arraylist_remove(&a, 1), ST_FAIL);
-
-    /* check arraylist state */
-    assertr_equals(a._allocated_size, 4, ST_FAIL);
-    assertr_equals(a.size, 3, ST_FAIL);
-    assertr_equals(a.data[0], 'b', ST_FAIL);
-    assertr_equals(a.data[1], 'd', ST_FAIL);
-    assertr_equals(a.data[2], 'e', ST_FAIL);
-
-
-    /* create a preallocated sample_struct arraylist */
-    sample_struct_arraylist_t b;
-    assertr_status(sample_struct_arraylist_init(&b, 5), ST_FAIL);
-
-    /* add 2 new elements */
-    sample_struct s1 = { 1, "string" };
-    sample_struct s2 = { 0, "a" };
-    assertr_status(arraylist_add(sample_struct)(&b, s1), ST_FAIL);
-    assertr_status(sample_struct_arraylist_add(&b, s2), ST_FAIL);
-
-    /* remove the last element */
-    assertr_status(arraylist_remove(sample_struct)(&b, 1), ST_FAIL);
-
-    /* check arraylist state */
-    assertr_equals(b._allocated_size, 1, ST_FAIL);
-    assertr_equals(b.size, 1, ST_FAIL);
-    assertr_equals(b.data[0].a, s1.a, ST_FAIL);
-    assertr_zero(strcmp(b.data[0].b, s1.b), ST_FAIL);
-
-
-    /* create an empty arraylist */
-    int_arraylist_t c;
-    assertr_status(arraylist_init_empty(int)(&c), ST_FAIL);
+    ncr_assert_status(arraylist_remove(char)(&a, 4));
+        check_arraylist_state(a, 4, 4);
+        cr_assert(eq(chr, a.data[0], 'a'));
+        cr_assert(eq(chr, a.data[1], 'b'));
+        cr_assert(eq(chr, a.data[2], 'c'));
+        cr_assert(eq(chr, a.data[3], 'e'));
     
-    /* try to remove an element */
-    logi("expecting three identical index errors");
-    assertr_bad_status(arraylist_remove(int)(&c, 3), ST_FAIL);
-    assertr_bad_status(arraylist_remove(int)(&c, -1), ST_FAIL);
-    assertr_bad_status(arraylist_pop(int)(&c), ST_FAIL);
-    logi("end of expected error list");
+    ncr_assert_status(arraylist_remove(char)(&a, 0));
+        check_arraylist_state(a, 3, 4);
+        cr_assert(eq(chr, a.data[0], 'b'));
+        cr_assert(eq(chr, a.data[1], 'c'));
+        cr_assert(eq(chr, a.data[2], 'e'));
 
-
-    /* free the arraylists */
-    arraylist_free(char)(&a);
-    sample_struct_arraylist_free(&b);
-    int_arraylist_free(&c);
-
-    return ST_OK;
-}
-
-status_t test_arraylist_trim() {
-    /* create an empty char arraylist */
-    char_arraylist_t a;
-    assertr_status(arraylist_init(char)(&a, 0), ST_FAIL);
-
-    /* add 3 new elements */
-    assertr_status(arraylist_add(char)(&a, 'a'), ST_FAIL);
-    assertr_status(char_arraylist_add(&a, 'b'), ST_FAIL);
-    assertr_status(char_arraylist_add(&a, 'c'), ST_FAIL);
-
-    /* check arraylist state */
-    assertr_equals(a._allocated_size, 4, ST_FAIL);
-    assertr_equals(a.size, 3, ST_FAIL);
-    assertr_equals(a.data[0], 'a', ST_FAIL);
-    assertr_equals(a.data[1], 'b', ST_FAIL);
-    assertr_equals(a.data[2], 'c', ST_FAIL);
-
-    /* trim the arraylist */
-    assertr_status(char_arraylist_trim(&a), ST_FAIL);
-
-    /* check arraylist state */
-    assertr_equals(a._allocated_size, a.size, ST_FAIL);
-    assertr_equals(a._allocated_size, 3, ST_FAIL);
-    assertr_equals(a.data[0], 'a', ST_FAIL);
-    assertr_equals(a.data[1], 'b', ST_FAIL);
-    assertr_equals(a.data[2], 'c', ST_FAIL);
-
-
-    /* create a preallocated sample_struct arraylist */
-    sample_struct_arraylist_t b;
-    assertr_status(sample_struct_arraylist_init(&b, 5), ST_FAIL);
-
-    /* add 2 new elements */
-    sample_struct s1 = { 1, "string" };
-    sample_struct s2 = { 0, "a" };
-    assertr_status(arraylist_add(sample_struct)(&b, s1), ST_FAIL);
-    assertr_status(sample_struct_arraylist_add(&b, s2), ST_FAIL);
-
-    /* check arraylist state */
-    assertr_equals(b._allocated_size, 5, ST_FAIL);
-    assertr_equals(b.size, 2, ST_FAIL);
-
-    /* trim the arraylist */
-    assertr_status(arraylist_trim(sample_struct)(&b), ST_FAIL);
-
-    /* check arraylist state */
-    assertr_equals(b._allocated_size, b.size, ST_FAIL);
-    assertr_equals(b._allocated_size, 2, ST_FAIL);
-
-    /* free the arraylists */
-    arraylist_free(char)(&a);
-    arraylist_free(sample_struct)(&b);
-
-    return ST_OK;
-}
-
-status_t test_arraylist_revert() {
-    /* create an empty char arraylist */
-    char_arraylist_t a;
-    assertr_status(arraylist_init(char)(&a, 0), ST_FAIL);
-
-    /* add 3 new elements */
-    assertr_status(arraylist_add(char)(&a, 'a'), ST_FAIL);
-    assertr_status(char_arraylist_add(&a, 'b'), ST_FAIL);
-    assertr_status(char_arraylist_add(&a, 'c'), ST_FAIL);
-
-    /* check arraylist state */
-    assertr_equals(a._allocated_size, 4, ST_FAIL);
-    assertr_equals(a.size, 3, ST_FAIL);
-    assertr_equals(a.data[0], 'a', ST_FAIL);
-    assertr_equals(a.data[1], 'b', ST_FAIL);
-    assertr_equals(a.data[2], 'c', ST_FAIL);
-
-    /* revert the arraylist */
-    char_arraylist_revert(&a);
-
-    /* check arraylist state */
-    assertr_equals(a.data[0], 'c', ST_FAIL);
-    assertr_equals(a.data[1], 'b', ST_FAIL);
-    assertr_equals(a.data[2], 'a', ST_FAIL);
-
-
-    /* create a preallocated sample_struct arraylist */
-    sample_struct_arraylist_t b;
-    assertr_status(sample_struct_arraylist_init(&b, 5), ST_FAIL);
-
-    /* add 2 new elements */
-    sample_struct s1 = { 1, "string" };
-    sample_struct s2 = { 0, "a" };
-    assertr_status(arraylist_add(sample_struct)(&b, s1), ST_FAIL);
-    assertr_status(sample_struct_arraylist_add(&b, s2), ST_FAIL);
-
-    /* check arraylist state */
-    assertr_equals(b._allocated_size, 5, ST_FAIL);
-    assertr_equals(b.size, 2, ST_FAIL);
-    assertr_equals(b.data[0].a, 1, ST_FAIL);
-    assertr_zero(strcmp(b.data[0].b, "string"), ST_FAIL);
-    assertr_equals(b.data[1].a, 0, ST_FAIL);
-    assertr_zero(strcmp(b.data[1].b, "a"), ST_FAIL);
-
-    /* revert the arraylist */
-    arraylist_revert(sample_struct)(&b);
-
-     /* check arraylist state */
-    assertr_equals(b._allocated_size, 5, ST_FAIL);
-    assertr_equals(b.size, 2, ST_FAIL);
-    assertr_equals(b.data[0].a, 0, ST_FAIL);
-    assertr_zero(strcmp(b.data[0].b, "a"), ST_FAIL);
-    assertr_equals(b.data[1].a, 1, ST_FAIL);
-    assertr_zero(strcmp(b.data[1].b, "string"), ST_FAIL);
-
-    /* free the arraylists */
-    arraylist_free(char)(&a);
-    arraylist_free(sample_struct)(&b);
-
-    return ST_OK;
-}
-
-/**
- * Tests if a new element could be
- * added on top of an arraylist
- * with an "exact" resizing configurations
- * 
- * @return ST_FAIL if an assertion fails,
- *          otherwise ST_OK 
- */
-status_t test_arraylist_add_exact() {
-    /* create an empty int arraylist */
-    int_arraylist_t a;
-    assertr_status(arraylist_init(int)(&a, 0), ST_FAIL);
-
-    /* add 2 elements */
-    assertr_status(arraylist_add(int)(&a, -1), ST_FAIL);
-    assertr_status(int_arraylist_add(&a, 777), ST_FAIL);
-
-    /* check arraylist state */
-    assertr_equals(a.size, 2, ST_FAIL);
-    assertr_equals(a._allocated_size, 2, ST_FAIL);
-    assertr_equals(a.data[0], -1, ST_FAIL);
-    assertr_equals(a.data[1], 777, ST_FAIL);
-
-    /* add a third element */
-    assertr_status(int_arraylist_add(&a, 1171), ST_FAIL);
-
-    /* check arraylist state */
-    assertr_equals(a.size, 3, ST_FAIL);
-    assertr_equals(a._allocated_size, 3, ST_FAIL);
-    assertr_equals(a.data[2], 1171, ST_FAIL);
-
-    /* free the arraylist */
-    int_arraylist_free(&a);
-
-    return ST_OK;
-}
-
-/**
- * Tests if an arraylist
- * can be transformed to a list
- * 
- * @return ST_FAIL if an assertion fails,
- *          otherwise ST_OK 
- */
-status_t test_arraylist_to_list() {
-    /* create an empty int arraylist */
-    int_arraylist_t a;
-    assertr_status(arraylist_init(int)(&a, 0), ST_FAIL);
-
-    /* add 3 elements */
-    assertr_status(arraylist_add(int)(&a, 11), ST_FAIL);
-    assertr_status(int_arraylist_add(&a, 33), ST_FAIL);
-    assertr_status(int_arraylist_add(&a, -710), ST_FAIL);
-
-    /* check arraylist state */
-    assertr_equals(a.size, 3, ST_FAIL);
-    assertr_equals(a._allocated_size, 3, ST_FAIL);
-    assertr_equals(a.data[0], 11, ST_FAIL);
-    assertr_equals(a.data[1], 33, ST_FAIL);
-    assertr_equals(a.data[2], -710, ST_FAIL);
-
-    /* transform */
-    int_list_t a_l;
-    assertr_status(arraylist_to_list(int)(&a, &a_l), ST_FAIL);
-
-    /* check list state */
-    assertr_equals(a_l.size, 3, ST_FAIL);
-    assertr_equals(a_l.data, a.data, ST_FAIL);
-    assertr_equals(a_l.data[0], 11, ST_FAIL);
-    assertr_equals(a_l.data[1], 33, ST_FAIL);
-    assertr_equals(a_l.data[2], -710, ST_FAIL);
-
-
-    /* create a preallocated sample_struct arraylist */
-    sample_struct_arraylist_t b;
-    assertr_status(sample_struct_arraylist_init(&b, 5), ST_FAIL);
-    sample_struct s1 = { 1, "string" };
-    sample_struct s2 = { 0, "a" };
-
-    /* add 2 new elements */
-    assertr_status(arraylist_add(sample_struct)(&b, s1), ST_FAIL);
-    assertr_status(sample_struct_arraylist_add(&b, s2), ST_FAIL);
-
-    /* check arraylist state */
-    assertr_equals(b._allocated_size, 5, ST_FAIL);
-    assertr_equals(b.size, 2, ST_FAIL);
-
-    /* transform */
-    list(sample_struct) b_l;
-    assertr_status(arraylist_to_list(sample_struct)(&b, &b_l), ST_FAIL);
-
-    /* check list state */
-    assertr_equals(b_l.size, 2, ST_FAIL);
-    assertr_equals(b_l.data[0].a, 1, ST_FAIL);
-    assertr_zero(strcmp(b_l.data[0].b, "string"), ST_FAIL);
-    assertr_equals(b_l.data[1].a, 0, ST_FAIL);
-    assertr_zero(strcmp(b_l.data[1].b, "a"), ST_FAIL);
-
-    /* free the arraylists */
-    int_arraylist_free(&a);
-    arraylist_free(sample_struct)(&b);
-
-    return ST_OK;
-}
-
-/**
- * Tests if the arraylist type could
- * be initialized correctly with
- * one initial elements
- * 
- * @return ST_FAIL if an assertion fails,
- *          otherwise ST_OK
- */
-status_t test_arraylist_init_with() {
-    /* create an empty char arraylist */
-    char_arraylist_t a;
-    assertr_status(arraylist_init_with(char)(&a, 'A'), ST_FAIL);
-    assertr_equals(a.size, 1, ST_FAIL);
-    assertr_equals(a._allocated_size, 2, ST_FAIL);
-    assertr_equals(a.data[0], 'A', ST_FAIL);
+    ncr_assert_bad_status(arraylist_remove(char)(&a, 12412));
     
-    /* create an int arraylist */
-    int_arraylist_t b;
-    assertr_status(arraylist_init_with(int)(&b, 3), ST_FAIL);
-    assertr_equals(b.size, 1, ST_FAIL);
-    assertr_equals(b._allocated_size, 1, ST_FAIL);
-    assertr_equals(b.data[0], 3, ST_FAIL);
+    /* test removing a structure from an arraylist */
+    sample_type s1 = { .a = 77, .b = "aseasd" };
+    sample_type s2 = { .a = 12, .b = "afe" };
+    sample_type s3 = { .a = 32, .b = "hrs" };
+    ncr_assert_status(arraylist_init(sample_type)(&b, 0));
+    ncr_assert_status(arraylist_add(sample_type)(&b, s1));
+    ncr_assert_status(arraylist_add(sample_type)(&b, s2));
+    ncr_assert_status(arraylist_add(sample_type)(&b, s3));
+        check_arraylist_state(b, 3, 4);
 
-    /* create a sample_struct arraylist */
-    sample_struct_arraylist_t c;
-    sample_struct sample;
-    sample.a = 17;
-    sample.b = "adasd";
-    assertr_status(arraylist_init_with(sample_struct)(&c, sample), ST_FAIL);
-    assertr_equals(c.size, 1, ST_FAIL);
-    assertr_equals(c._allocated_size, 2, ST_FAIL);
-    assertr_equals(c.data[0].a, 17, ST_FAIL);
-    assertr_zero(strcmp(c.data[0].b, "adasd"), ST_FAIL);
+    ncr_assert_status(arraylist_remove(sample_type)(&b, 1));
+        check_arraylist_state(b, 2, 2);
+        cr_assert(eq(u16, b.data[0].a, 77));
+        cr_assert(eq(str, b.data[0].b, "aseasd"));
+        cr_assert(eq(u16, b.data[1].a, 32));
+        cr_assert(eq(str, b.data[1].b, "hrs"));
+    
+    ncr_assert_status(arraylist_remove(sample_type)(&b, 0));
+        check_arraylist_state(b, 1, 1);
+        cr_assert(eq(u16, b.data[0].a, 32));
+        cr_assert(eq(str, b.data[0].b, "hrs"));
 
-    /* free the arraylists */
-    char_arraylist_free(&a);
-    arraylist_free(int)(&b);
-    sample_struct_arraylist_free(&c);
+    ncr_assert_status(arraylist_remove(sample_type)(&b, 0));
+        check_arraylist_state(b, 0, 0);
 
-    return ST_OK;
+    ncr_assert_bad_status(arraylist_remove(sample_type)(&b, 0));
+
+    /* test removing from an exact resizing integer arraylist */
+    ncr_assert_status(arraylist_init(uint64_t)(&c, 0));
+    ncr_assert_status(arraylist_add(uint64_t)(&c, 646351));
+    ncr_assert_status(arraylist_add(uint64_t)(&c, 74745));
+    ncr_assert_status(arraylist_add(uint64_t)(&c, 1244));
+    ncr_assert_status(arraylist_add(uint64_t)(&c, 45745));
+    ncr_assert_status(arraylist_add(uint64_t)(&c, 16863));
+        check_arraylist_state(c, 5, 5);
+
+    ncr_assert_status(arraylist_remove(uint64_t)(&c, 1));
+        check_arraylist_state(c, 4, 5);
+        cr_assert(eq(u64, c.data[0], 646351));
+        cr_assert(eq(u64, c.data[1], 1244));
+        cr_assert(eq(u64, c.data[2], 45745));
+        cr_assert(eq(u64, c.data[3], 16863));
+
+    ncr_assert_status(arraylist_remove(uint64_t)(&c, 0));
+        check_arraylist_state(c, 3, 5);
+        cr_assert(eq(u64, c.data[0], 1244));
+        cr_assert(eq(u64, c.data[1], 45745));
+        cr_assert(eq(u64, c.data[2], 16863));
+    
+    ncr_assert_status(arraylist_remove(uint64_t)(&c, 2));
+        check_arraylist_state(c, 2, 2);
+        cr_assert(eq(u64, c.data[0], 1244));
+        cr_assert(eq(u64, c.data[1], 45745));
+
+    ncr_assert_bad_status(arraylist_remove(uint64_t)(&c, -1));
+    ncr_assert_bad_status(arraylist_remove(uint64_t)(&c, 2));
+
+    free_arraylists();
 }
 
+Test(arraylist, trim) {
+    create_arraylists();
 
-    /* main function */
-int main() {
-    if (test_arraylist_init() != ST_OK) {
-        return EXIT_FAILURE;
-    }
-    if (test_arraylist_add() != ST_OK) {
-        return EXIT_FAILURE;
-    }
-    if (test_arraylist_remove() != ST_OK) {
-        return EXIT_FAILURE;
-    }
-    if (test_arraylist_trim() != ST_OK) {
-        return EXIT_FAILURE;
-    }
-    if (test_arraylist_revert() != ST_OK) {
-        return EXIT_FAILURE;
-    }
-    if (test_arraylist_add_exact() != ST_OK) {
-        return EXIT_FAILURE;
-    }
-    if (test_arraylist_to_list() != ST_OK) {
-        return EXIT_FAILURE;
-    }
-    if (test_arraylist_init_with() != ST_OK) {
-        return EXIT_FAILURE;
-    }
+    /* test trimming an overallocated arraylist */
+    ncr_assert_status(arraylist_init(char)(&a, 7));
+        check_arraylist_state(a, 0, 7);
+    ncr_assert_status(arraylist_add(char)(&a, 'a'));
+    ncr_assert_status(arraylist_add(char)(&a, 'b'));
+    ncr_assert_status(arraylist_add(char)(&a, 'c'));
+    ncr_assert_status(arraylist_add(char)(&a, 'd'));
+        check_arraylist_state(a, 4, 7);
 
-    return EXIT_SUCCESS;
+    ncr_assert_status(arraylist_trim(char)(&a));
+        check_arraylist_state(a, 4, 4);
+
+    ncr_assert_status(arraylist_remove(char)(&a, 2));
+        check_arraylist_state(a, 3, 4);
+        cr_assert(eq(chr, a.data[0], 'a'));
+        cr_assert(eq(chr, a.data[1], 'b'));
+        cr_assert(eq(chr, a.data[2], 'd'));
+
+    /* test trimming an initially empty structure arraylist */
+    ncr_assert_status(arraylist_init(sample_type)(&b, 0));
+        check_arraylist_state(b, 0, 0);
+    
+    ncr_assert_status(arraylist_trim(sample_type)(&b));
+        check_arraylist_state(b, 0, 0);
+
+    sample_type s1 = { .a = 77, .b = "aseasd" };
+    sample_type s2 = { .a = 12, .b = "afe" };
+    sample_type s3 = { .a = 32, .b = "hrs" };
+    ncr_assert_status(arraylist_add(sample_type)(&b, s1));
+    ncr_assert_status(arraylist_add(sample_type)(&b, s2));
+    ncr_assert_status(arraylist_add(sample_type)(&b, s3));
+        check_arraylist_state(b, 3, 4);
+
+    ncr_assert_status(arraylist_trim(sample_type)(&b));
+        check_arraylist_state(b, 3, 3);
+        cr_assert(eq(u16, b.data[0].a, 77));
+        cr_assert(eq(str, b.data[0].b, "aseasd"));
+        cr_assert(eq(u16, b.data[1].a, 12));
+        cr_assert(eq(str, b.data[1].b, "afe"));
+        cr_assert(eq(u16, b.data[2].a, 32));
+        cr_assert(eq(str, b.data[2].b, "hrs"));
+    
+    /* test trimming an exact resizing integer arraylist */
+    ncr_assert_status(arraylist_init(uint64_t)(&c, 8));
+    ncr_assert_status(arraylist_add(uint64_t)(&c, 646351));
+    ncr_assert_status(arraylist_add(uint64_t)(&c, 74745));
+    ncr_assert_status(arraylist_add(uint64_t)(&c, 1244));
+    ncr_assert_status(arraylist_add(uint64_t)(&c, 45745));
+        check_arraylist_state(c, 4, 8);
+
+    ncr_assert_status(arraylist_trim(uint64_t)(&c));
+        check_arraylist_state(c, 4, 4);
+        cr_assert(eq(u64, c.data[0], 646351));
+        cr_assert(eq(u64, c.data[1], 74745));
+        cr_assert(eq(u64, c.data[2], 1244));
+        cr_assert(eq(u64, c.data[3], 45745));
+
+    free_arraylists();
+}
+
+Test(arraylist, revert) {
+    create_arraylists();
+
+    /* check reverting a simple char arraylist */
+    ncr_assert_status(arraylist_init(char)(&a, 0));
+    ncr_assert_status(arraylist_add(char)(&a, 'a'));
+    ncr_assert_status(arraylist_add(char)(&a, 'b'));
+    ncr_assert_status(arraylist_add(char)(&a, 'c'));
+        check_arraylist_state(a, 3, 4);
+
+    arraylist_revert(char)(&a);
+        check_arraylist_state(a, 3, 4);
+        cr_assert(eq(chr, a.data[0], 'c'));
+        cr_assert(eq(chr, a.data[1], 'b'));
+        cr_assert(eq(chr, a.data[2], 'a'));
+
+    /* test reverting an initially empty structure arraylist */
+    ncr_assert_status(arraylist_init(sample_type)(&b, 0));
+        check_arraylist_state(b, 0, 0);
+    
+    arraylist_revert(sample_type)(&b);
+        check_arraylist_state(b, 0, 0);
+
+    sample_type s1 = { .a = 77, .b = "aseasd" };
+    sample_type s2 = { .a = 12, .b = "afe" };
+    sample_type s3 = { .a = 32, .b = "hrs" };
+    sample_type s4 = { .a = 77, .b = "asease" };
+    ncr_assert_status(arraylist_add(sample_type)(&b, s1));
+    ncr_assert_status(arraylist_add(sample_type)(&b, s2));
+    ncr_assert_status(arraylist_add(sample_type)(&b, s3));
+    ncr_assert_status(arraylist_add(sample_type)(&b, s4));
+        check_arraylist_state(b, 4, 4);
+
+    arraylist_revert(sample_type)(&b);
+        check_arraylist_state(b, 4, 4);
+        cr_assert(eq(u16, b.data[0].a, 77));
+        cr_assert(eq(str, b.data[0].b, "asease"));
+        cr_assert(eq(u16, b.data[1].a, 32));
+        cr_assert(eq(str, b.data[1].b, "hrs"));
+        cr_assert(eq(u16, b.data[2].a, 12));
+        cr_assert(eq(str, b.data[2].b, "afe"));
+        cr_assert(eq(u16, b.data[3].a, 77));
+        cr_assert(eq(str, b.data[3].b, "aseasd"));
+
+    /* test reverting an exact resizing integer arraylist */
+    ncr_assert_status(arraylist_init(uint64_t)(&c, 8));
+    ncr_assert_status(arraylist_add(uint64_t)(&c, 646351));
+    ncr_assert_status(arraylist_add(uint64_t)(&c, 74745));
+    ncr_assert_status(arraylist_add(uint64_t)(&c, 1244));
+    ncr_assert_status(arraylist_add(uint64_t)(&c, 45745));
+        check_arraylist_state(c, 4, 8);
+
+    arraylist_revert(uint64_t)(&c);
+        check_arraylist_state(c, 4, 8);
+        cr_assert(eq(u64, c.data[0], 45745));
+        cr_assert(eq(u64, c.data[1], 1244));
+        cr_assert(eq(u64, c.data[2], 74745));
+        cr_assert(eq(u64, c.data[3], 646351));
+
+    free_arraylists();
+}
+
+//-- redo, (list has the same data pointer)
+Test(arraylist, to_list) {
+    create_arraylists();
+
+    /* check converting a simple char arraylist */
+    ncr_assert_status(arraylist_init(char)(&a, 0));
+    ncr_assert_status(arraylist_add(char)(&a, 'a'));
+    ncr_assert_status(arraylist_add(char)(&a, 'b'));
+    ncr_assert_status(arraylist_add(char)(&a, 'c'));
+        check_arraylist_state(a, 3, 4);
+
+    list(char) la;
+    ncr_assert_status(arraylist_to_list(char)(&a, &la));
+        check_arraylist_state(a, 3, 3);
+        cr_assert(eq(sz, la.size, 3));
+        cr_assert(eq(ptr, a.data, la.data));
+        cr_assert(eq(chr, a.data[0], la.data[0]));
+        cr_assert(eq(chr, a.data[1], la.data[1]));
+        cr_assert(eq(chr, a.data[2], la.data[2]));
+        cr_assert(eq(chr, la.data[0], 'a'));
+        cr_assert(eq(chr, la.data[1], 'b'));
+        cr_assert(eq(chr, la.data[2], 'c'));
+
+    /* test converting an initially empty structure arraylist */
+    ncr_assert_status(arraylist_init(sample_type)(&b, 0));
+        check_arraylist_state(b, 0, 0);
+    
+    list(sample_type) lb;
+    ncr_assert_status(arraylist_to_list(sample_type)(&b, &lb));
+        cr_assert(eq(sz, lb.size, 0));
+        cr_assert(eq(ptr, lb.data, NULL));
+        cr_assert(eq(ptr, b.data, lb.data));
+        check_arraylist_state(b, 0, 0);
+
+    sample_type s1 = { .a = 77, .b = "aseasd" };
+    sample_type s2 = { .a = 12, .b = "afe" };
+    sample_type s3 = { .a = 32, .b = "hrs" };
+    sample_type s4 = { .a = 77, .b = "asease" };
+    ncr_assert_status(arraylist_add(sample_type)(&b, s1));
+    ncr_assert_status(arraylist_add(sample_type)(&b, s2));
+    ncr_assert_status(arraylist_add(sample_type)(&b, s3));
+    ncr_assert_status(arraylist_add(sample_type)(&b, s4));
+        check_arraylist_state(b, 4, 4);
+
+    ncr_assert_status(arraylist_to_list(sample_type)(&b, &lb));
+        check_arraylist_state(b, 4, 4);
+        cr_assert(eq(sz, lb.size, 4));
+        cr_assert(eq(ptr, b.data, lb.data));
+        cr_assert(eq(u16, lb.data[0].a, 77));
+        cr_assert(eq(str, lb.data[0].b, "aseasd"));
+        cr_assert(eq(u16, lb.data[1].a, 12));
+        cr_assert(eq(str, lb.data[1].b, "afe"));
+        cr_assert(eq(u16, lb.data[2].a, 32));
+        cr_assert(eq(str, lb.data[2].b, "hrs"));
+        cr_assert(eq(u16, lb.data[2].a, 32));
+        cr_assert(eq(str, lb.data[2].b, "hrs"));
+
+    /* test converting an exact resizing integer arraylist */
+    ncr_assert_status(arraylist_init(uint64_t)(&c, 8));
+    ncr_assert_status(arraylist_add(uint64_t)(&c, 646351));
+    ncr_assert_status(arraylist_add(uint64_t)(&c, 74745));
+    ncr_assert_status(arraylist_add(uint64_t)(&c, 1244));
+    ncr_assert_status(arraylist_add(uint64_t)(&c, 45745));
+        check_arraylist_state(c, 4, 8);
+
+    list(uint64_t) lc;
+    ncr_assert_status(arraylist_to_list(uint64_t)(&c, &lc));
+        cr_assert(eq(sz, lc.size, 4));
+        check_arraylist_state(c, 4, 4);
+        cr_assert(eq(ptr, c.data, lc.data));
+        cr_assert(eq(u64, lc.data[0], c.data[0]));
+        cr_assert(eq(u64, lc.data[1], c.data[1]));
+        cr_assert(eq(u64, lc.data[2], c.data[2]));
+        cr_assert(eq(u64, lc.data[3], c.data[3]));
+
+    free_arraylists();
+}
+
+Test(arraylist, move_append) {
+
 }

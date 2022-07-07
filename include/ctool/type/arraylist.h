@@ -23,23 +23,30 @@
 
     /* defines */
 /**
+ * Default size for preallocated arraylists
+ */
+#define ARRAYLIST_DEFAULT_SIZE 2
+
+/**
  * Generates a generic name for
  * an arraylist of specified type
  * 
  * @param[in] type Type of the arraylist
  */
-#define arraylist(type)            _ctool_generic_type(arraylist, type)
-#define arraylist_add(type)        _ctool_generic_function(arraylist, type, add)
-#define arraylist_push             arraylist_add
-#define arraylist_remove(type)     _ctool_generic_function(arraylist, type, remove)
-#define arraylist_trim(type)       _ctool_generic_function(arraylist, type, trim)
-#define arraylist_init(type)       _ctool_generic_function(arraylist, type, init)
-#define arraylist_free(type)       _ctool_generic_function(arraylist, type, free)
-#define arraylist_pop(type)        _ctool_generic_function(arraylist, type, pop)
-#define arraylist_revert(type)     _ctool_generic_function(arraylist, type, revert)
-#define arraylist_to_list(type)    _ctool_generic_function(arraylist, type, to_list)
-#define arraylist_init_with(type)  _ctool_generic_function(arraylist, type, init_with)
-#define arraylist_init_empty(type) _ctool_generic_function(arraylist, type, init_empty)
+#define arraylist(type)              _ctool_generic_type(arraylist, type)
+#define arraylist_add(type)          _ctool_generic_function(arraylist, type, add)
+#define arraylist_push               arraylist_add
+#define arraylist_remove(type)       _ctool_generic_function(arraylist, type, remove)
+#define arraylist_trim(type)         _ctool_generic_function(arraylist, type, trim)
+#define arraylist_init(type)         _ctool_generic_function(arraylist, type, init)
+#define arraylist_free(type)         _ctool_generic_function(arraylist, type, free)
+#define arraylist_pop(type)          _ctool_generic_function(arraylist, type, pop)
+#define arraylist_revert(type)       _ctool_generic_function(arraylist, type, revert)
+#define arraylist_to_list(type)      _ctool_generic_function(arraylist, type, to_list)
+#define arraylist_init_with(type)    _ctool_generic_function(arraylist, type, init_with)
+#define arraylist_init_empty(type)   _ctool_generic_function(arraylist, type, init_empty)
+#define arraylist_init_default(type) _ctool_generic_function(arraylist, type, init_default)
+#define arraylist_move_append(type)  _ctool_generic_function(arraylist, type, move_append)
 
 /**
  * Returns the last element of an arraylist
@@ -198,6 +205,9 @@ static inline status_t arraylist_init_with(type)(arraylist(type)* list, type ele
 /**                                                                                     \
  * Initializes an empty arraylist                                                       \
  *                                                                                      \
+ * Used for initializing arraylists that are likely to remain empty                     \
+ * in order to conserve allocated memory                                                \
+ *                                                                                      \
  * @param[in] list The arraylist                                                        \
  *                                                                                      \
  * @return ST_FAIL if the arraylist cannot be initialized,                              \
@@ -206,12 +216,48 @@ static inline status_t arraylist_init_with(type)(arraylist(type)* list, type ele
 static inline status_t arraylist_init_empty(type)(arraylist(type)* list) {              \
     assertr_status(arraylist_init(type)(list, 0), ST_FAIL);                             \
     return ST_OK;                                                                       \
+}                                                                                       \
+                                                                                        \
+/**                                                                                     \
+ * Initializes an arraylist with the default non-zero size                              \
+ *                                                                                      \
+ * Commonly used to pre-allocate arraylists that                                        \
+ * will certainly be filled afterwards but with                                         \
+ * an indefenite number of elements                                                     \
+ *                                                                                      \
+ * @param[in] list The arraylist                                                        \
+ *                                                                                      \
+ * @return ST_FAIL if the arraylist cannot be initialized,                              \
+ *          otherwise ST_OK                                                             \
+ */                                                                                     \
+static inline status_t arraylist_init_default(type)(arraylist(type)* list) {            \
+    assertr_status(arraylist_init(type)(list, ARRAYLIST_DEFAULT_SIZE), ST_FAIL);        \
+    return ST_OK;                                                                       \
+}                                                                                       \
+                                                                                        \
+/**                                                                                     \
+ * Assigns the arraylist to a supplied variable                                         \
+ * while appending a new element to it                                                  \
+ *                                                                                      \
+ * Might be useful in some complex algorithms,                                          \
+ * but generally is unused                                                              \
+ *                                                                                      \
+ * @param[in] list The arraylist                                                        \
+ * @param[in] element The element                                                       \
+ * @param[in] variable The variable to be assigned                                      \
+ *                                                                                      \
+ * @return ST_FAIL if the element cannot be added,                                      \
+ *          otherwise ST_OK                                                             \
+ */                                                                                     \
+static inline status_t arraylist_move_append(type)(arraylist(type)* list, type element, arraylist(type)* variable) { \
+    *variable = *list;                                                                  \
+    assertr_status(arraylist_add(type)(variable, element), ST_FAIL);                    \
+    return ST_OK;                                                                       \
 }
 
 
 
-//--todo: Make arraylist_init size default to 2
-//--todo: Make arl_assign_add function
+
 
 
 

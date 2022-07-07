@@ -2,3 +2,5 @@
 build
 builddir
 doc
+subprojects/*
+!subprojects/criterion.wrap
