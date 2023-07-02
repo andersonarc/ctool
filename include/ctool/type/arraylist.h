@@ -75,13 +75,14 @@
 #define arraylist_to_string_format(list) list.size, list._allocated_size
 
 /**
- * Declares an arraylist of specified type
+ * Arraylist bare type definition,
+ * with no functions declared
  * 
  * @note The declaration should be placed in a header file
  * 
  * @param[in] type Type of the arraylist
-**/
-#define arraylist_declare(type)                   \
+ */
+#define arraylist_declare_type(type)              \
                                                   \
 list_declare(type);                               \
                                                   \
@@ -89,8 +90,18 @@ typedef struct arraylist(type) {                  \
     size_t _allocated_size;                       \
     size_t size;                                  \
     type* data;                                   \
-} arraylist(type);                                \
-                                                  \
+} arraylist(type);
+
+
+
+/**
+ * Declares the functions for an arraylist of specified type
+ * 
+ * @note The declaration should be placed in a header file
+ * 
+ * @param[in] type Type of the arraylist
+**/
+#define arraylist_declare_functions(type)         \
 /**                                               \
  * Appends a new element into an arraylist        \
  *                                                \
@@ -255,6 +266,18 @@ static inline status_t arraylist_move_append(type)(arraylist(type)* list, type e
     return ST_OK;                                                                       \
 }
 
+
+
+/**
+ * Declares an arraylist of specified type
+ * 
+ * @note The declaration should be placed in a header file
+ * 
+ * @param[in] type Type of the arraylist
+**/
+#define arraylist_declare(type)     \
+arraylist_declare_type(type);       \
+arraylist_declare_functions(type);
 
 
 
